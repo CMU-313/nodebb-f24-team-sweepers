@@ -82,3 +82,10 @@ Interested in a sublicense agreement for use of NodeBB in a non-free/restrictive
 * Unofficial IRC community &ndash; channel `#nodebb` on Libera.chat
 * [Follow us on Twitter](http://www.twitter.com/NodeBB/ "NodeBB Twitter")
 * [Like us on Facebook](http://www.facebook.com/NodeBB/ "NodeBB Facebook")
+
+## Team Members
+- Alanna Cao
+- Dhanya Shah
+- Karen Gonzalez
+- Saanika Chauk
+- Sofian Syed
