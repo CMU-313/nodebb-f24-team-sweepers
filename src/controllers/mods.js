@@ -18,6 +18,27 @@ const helpers = require('./helpers');
 const modsController = module.exports;
 modsController.flags = {};
 
+function adminModCid(isAdminOrGlobalMod, moderatedCidsLength) {
+	return (!isAdminOrGlobalMod && moderatedCidsLength);
+}
+
+function filtersCidInitialize(filters, res) {
+	if (!filters.cid) {
+		// If mod and no cid filter, add filter for their modded categories
+		return res.locals.cids;
+	} else if (Array.isArray(filters.cid)) {
+		// Remove cids they do not moderate
+		return filters.cid.filter(cid => res.locals.cids.includes(String(cid)));
+	} else if (!res.locals.cids.includes(String(filters.cid))) {
+		return res.locals.cids;
+	}
+}
+
+function paginationFilterCheck(filters) {
+	return (Object.keys(filters).length === 1 && filters.hasOwnProperty('page')) ||
+	(Object.keys(filters).length === 2 && filters.hasOwnProperty('page') && filters.hasOwnProperty('perPage'));
+}
+
 modsController.flags.list = async function (req, res) {
 	const validFilters = ['assignee', 'state', 'reporterId', 'type', 'targetUid', 'cid', 'quick', 'page', 'perPage'];
 	const validSorts = ['newest', 'oldest', 'reports', 'upvotes', 'downvotes', 'replies'];
@@ -31,13 +52,22 @@ modsController.flags.list = async function (req, res) {
 	const [isAdminOrGlobalMod, moderatedCids,, { sorts }] = results;
 	let [,, { filters }] = results;
 
-	if (!(isAdminOrGlobalMod || !!moderatedCids.length)) {
+	const AdminModeratedCidVal = adminModCid(isAdminOrGlobalMod, moderatedCids.length);
+	if ((!(isAdminOrGlobalMod || !!moderatedCids.length))) {
+		console.log('KAREN GONZALEZ');
 		return helpers.notAllowed(req, res);
 	}
 
-	if (!isAdminOrGlobalMod && moderatedCids.length) {
+	if (AdminModeratedCidVal) {
 		res.locals.cids = moderatedCids.map(cid => String(cid));
 	}
+	// if (!(isAdminOrGlobalMod || !!moderatedCids.length)) {
+	// return helpers.notAllowed(req, res);
+	// }
+
+	// if (!isAdminOrGlobalMod && moderatedCids.length) {
+	// res.locals.cids = moderatedCids.map(cid => String(cid));
+	// }
 
 	// Parse query string params for filters, eliminate non-valid filters
 	filters = filters.reduce((memo, cur) => {
@@ -54,24 +84,34 @@ modsController.flags.list = async function (req, res) {
 
 	let hasFilter = !!Object.keys(filters).length;
 
+	// if (res.locals.cids) {
+	// if (!filters.cid) {
+	// If mod and no cid filter, add filter for their modded categories
+	// filters.cid = res.locals.cids;
+	// } else if (Array.isArray(filters.cid)) {
+	// // Remove cids they do not moderate
+	// filters.cid = filters.cid.filter(cid => res.locals.cids.includes(String(cid)));
+	// } else if (!res.locals.cids.includes(String(filters.cid))) {
+	// filters.cid = res.locals.cids;
+	// hasFilter = false;
+	// }
+	// }
 	if (res.locals.cids) {
-		if (!filters.cid) {
-			// If mod and no cid filter, add filter for their modded categories
-			filters.cid = res.locals.cids;
-		} else if (Array.isArray(filters.cid)) {
-			// Remove cids they do not moderate
-			filters.cid = filters.cid.filter(cid => res.locals.cids.includes(String(cid)));
-		} else if (!res.locals.cids.includes(String(filters.cid))) {
-			filters.cid = res.locals.cids;
+		filters.cid = filtersCidInitialize(filters, res);
+		if (!res.locals.cids.includes(String(filters.cid))) {
 			hasFilter = false;
 		}
 	}
 
+	console.log('KAREN GONZALEZ');
 	// Pagination doesn't count as a filter
-	if (
-		(Object.keys(filters).length === 1 && filters.hasOwnProperty('page')) ||
-		(Object.keys(filters).length === 2 && filters.hasOwnProperty('page') && filters.hasOwnProperty('perPage'))
-	) {
+	// if (
+	// (Object.keys(filters).length === 1 && filters.hasOwnProperty('page')) ||
+	// (Object.keys(filters).length === 2 && filters.hasOwnProperty('page') && filters.hasOwnProperty('perPage'))
+	// ) {
+	// hasFilter = false;
+	// }
+	if (paginationFilterCheck(filters)) {
 		hasFilter = false;
 	}
 
