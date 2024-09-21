@@ -253,11 +253,23 @@ define('admin/extend/widgets', [
 		});
 	}
 
-	function setupCloneButton() {
-		const clone = $('[component="clone"]');
+	function clone(location, template) {
+		console.log('Dhanya Shah');
+		const widgets = $('#active-widgets .tab-pane[data-template="' + template + '"] [data-location="' + location + '"] [data-widget]');
+		widgets.each(function () {
+			const widget = $(this).clone(true);
+			appendClonedWidget(widget, location);
+		});
+	}
+	function appendClonedWidget(widget, location) {
+		$('#active-widgets .active.tab-pane[data-template]:not([data-template="global"]) [data-location="' + location + '"] .widget-area').append(widget);
+	}
+
+	function setupCloneButton() { // all correct
+		const cloneContainer = $('[component="clone"]');
 		const cloneBtn = $('[component="clone/button"]');
 
-		clone.find('.dropdown-menu li').on('click', function () {
+		cloneContainer.find('.dropdown-menu li').on('click', function () {
 			const template = $(this).find('a').text();
 			cloneBtn.translateHtml('[[admin/extend/widgets:clone-from]] <strong>' + template + '</strong>');
 			cloneBtn.attr('data-template', template);
@@ -281,18 +293,9 @@ define('admin/extend/widgets', [
 				return currentAreas.indexOf(location) !== -1 ? location : undefined;
 			}).get().filter(function (i) { return i; });
 
-			function clone(location) {
-				$('#active-widgets .tab-pane[data-template="' + template + '"] [data-location="' + location + '"]').each(function () {
-					$(this).find('[data-widget]').each(function () {
-						const widget = $(this).clone(true);
-						$('#active-widgets .active.tab-pane[data-template]:not([data-template="global"]) [data-location="' + location + '"] .widget-area').append(widget);
-					});
-				});
-			}
-
 			for (let i = 0, ii = areasToClone.length; i < ii; i++) {
 				const location = areasToClone[i];
-				clone(location);
+				clone(location, template);
 			}
 
 			alerts.success('[[admin/extend/widgets:alert.clone-success]]');
