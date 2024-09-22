@@ -266,6 +266,23 @@ define('forum/topic/postTools', [
 		postContainer.on('click', '[component="post/chat"]', function () {
 			openChat($(this));
 		});
+
+		// This is added logic that is done in order to pin a post when we click watched
+		// THis should be changed to be done when we click on the pin button when implemented.
+		postContainer.on('click', '[component="topic/watched"]', function () {
+			const tid = $(this).closest('[data-tid]').data('tid');
+			const isPinned = $(this).hasClass('pinned');
+			
+			socket.emit('topics.pin', { tid: tid, pin: !isPinned }, function (err) {
+				if (err) {
+					app.alertError(err.message);
+				} else {
+					$(this).toggleClass('pinned', !isPinned);
+					app.alertSuccess('Topic ' + (!isPinned ? 'pinned' : 'unpinned') + ' successfully');
+				}
+			}.bind(this));
+		});
+		
 	}
 
 	async function onReplyClicked(button, tid) {

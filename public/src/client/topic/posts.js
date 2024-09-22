@@ -34,6 +34,17 @@ define('forum/topic/posts', [
 		data.posts[0].timestamp = data.posts[0].topic.scheduled ? data.posts[0].timestamp : Date.now() - 1000;
 		data.posts[0].timestampISO = utils.toISOString(data.posts[0].timestamp);
 
+		// This next code block is added for making it 
+		const isPinned = data.posts[0].pinned;
+		const tid = data.posts[0].tid;
+		socket.emit('topics.pin', { tid: tid, pin: !isPinned }, function (err) {
+			if (err) {
+				app.alertError(err.message);
+			} else {
+				app.alertSuccess('Topic ' + (!isPinned ? 'pinned' : 'unpinned') + ' successfully');
+			}
+		});
+
 		Posts.modifyPostsByPrivileges(data.posts);
 
 		updatePostCounts(data.posts);
