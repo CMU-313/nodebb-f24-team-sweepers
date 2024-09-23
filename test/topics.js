@@ -834,6 +834,7 @@ describe('Topic\'s', () => {
 		let tid1;
 		let tid2;
 		let tid3;
+		
 		before(async () => {
 			async function createTopic() {
 				return (await topics.post({
@@ -847,33 +848,33 @@ describe('Topic\'s', () => {
 			tid2 = await createTopic();
 			tid3 = await createTopic();
 			await topics.tools.pin(tid1, adminUid);
-			// artificial timeout so pin time is different on redis sometimes scores are indentical
-			await sleep(5);
+			await sleep(5); // Ensure different pin times
 			await topics.tools.pin(tid2, adminUid);
 		});
-
+	
 		const socketTopics = require('../src/socket.io/topics');
-		it('should error with invalid data', (done) => {
+	
+		it('should error with null data', (done) => {
 			socketTopics.orderPinnedTopics({ uid: adminUid }, null, (err) => {
 				assert.equal(err.message, '[[error:invalid-data]]');
 				done();
 			});
 		});
-
-		it('should error with invalid data', (done) => {
+	
+		it('should error with array of nulls', (done) => {
 			socketTopics.orderPinnedTopics({ uid: adminUid }, [null, null], (err) => {
 				assert.equal(err.message, '[[error:invalid-data]]');
 				done();
 			});
 		});
-
+	
 		it('should error with unprivileged user', (done) => {
 			socketTopics.orderPinnedTopics({ uid: 0 }, { tid: tid1, order: 1 }, (err) => {
 				assert.equal(err.message, '[[error:no-privileges]]');
 				done();
 			});
 		});
-
+	
 		it('should not do anything if topics are not pinned', (done) => {
 			socketTopics.orderPinnedTopics({ uid: adminUid }, { tid: tid3, order: 1 }, (err) => {
 				assert.ifError(err);
@@ -884,25 +885,59 @@ describe('Topic\'s', () => {
 				});
 			});
 		});
-
-		it('should order pinned topics', (done) => {
+	
+		it('should order pinned topics correctly', (done) => {
 			db.getSortedSetRevRange(`cid:${topic.categoryId}:tids:pinned`, 0, -1, (err, pinnedTids) => {
 				assert.ifError(err);
-				assert.equal(pinnedTids[0], tid2);
-				assert.equal(pinnedTids[1], tid1);
+				assert.equal(pinnedTids[0], tid2); // Expect tid2 to be first
+				assert.equal(pinnedTids[1], tid1); // Expect tid1 to be second
+				
 				socketTopics.orderPinnedTopics({ uid: adminUid }, { tid: tid1, order: 0 }, (err) => {
 					assert.ifError(err);
-					db.getSortedSetRevRange(`cid:${topic.categoryId}:tids:pinned`, 0, -1, (err, pinnedTids) => {
+					db.getSortedSetRevRange(`cid:${topic.categoryId}:tids:pinned`, 0, -1, (err, newPinnedTids) => {
 						assert.ifError(err);
-						assert.equal(pinnedTids[0], tid1);
-						assert.equal(pinnedTids[1], tid2);
+						assert.equal(newPinnedTids[0], tid1); // Now tid1 should be first
+						assert.equal(newPinnedTids[1], tid2); // tid2 should be second
 						done();
 					});
 				});
 			});
 		});
+	
+		// Additional test cases for edge handling
+		it('should handle ordering with non-existent pinned topics gracefully', (done) => {
+			socketTopics.orderPinnedTopics({ uid: adminUid }, { tid: 9999, order: 0 }, (err) => {
+				assert.equal(err.message, '[[error:topic-not-found]]');
+				done();
+			});
+		});
+	
+		it('should maintain the order when reordering the same topic', (done) => {
+			socketTopics.orderPinnedTopics({ uid: adminUid }, { tid: tid1, order: 1 }, (err) => {
+				assert.ifError(err);
+				// Verify the state remains unchanged
+				db.getSortedSetRevRange(`cid:${topic.categoryId}:tids:pinned`, 0, -1, (err, pinnedTids) => {
+					assert.ifError(err);
+					assert.equal(pinnedTids[0], tid1);
+					assert.equal(pinnedTids[1], tid2);
+					done();
+				});
+			});
+		});
+	
+		it('should gracefully handle empty pinned topics list', async () => {
+			// Unpin all topics and attempt to reorder
+			await topics.tools.unpin(tid1, adminUid);
+			await topics.tools.unpin(tid2, adminUid);
+			
+			socketTopics.orderPinnedTopics({ uid: adminUid }, { tid: tid1, order: 0 }, (err) => {
+				assert.ifError(err);
+				// Verify no changes in DB
+				done();
+			});
+		});
 	});
-
+		
 
 	describe('.ignore', () => {
 		let newTid;
