@@ -267,21 +267,34 @@ define('forum/topic/postTools', [
 			openChat($(this));
 		});
 
-		// This is added logic that is done in order to pin a post when we click watched
-		// THis should be changed to be done when we click on the pin button when implemented.
+		// This code block is added to pinning or unpinning a post when we click the watched button,
+		// but this should be updated to trigger when the actual pin button is implemented.
+		// Listen for a click event on the button within the post container.
+		// Note: "component='topic/watched'" is used to identify the watched button.
 		postContainer.on('click', '[component="topic/watched"]', function () {
+			
+			// Get the topic tid of post.
 			const tid = $(this).closest('[data-tid]').data('tid');
+			
+			// Determine whether the post is currently pinned.
 			const isPinned = $(this).hasClass('pinned');
 			
+			// Emit a 'topics.pin' event to the server to toggle the pin state of the topic.
 			socket.emit('topics.pin', { tid: tid, pin: !isPinned }, function (err) {
+				
+				// Error message for privaledges.
 				if (err) {
 					app.alertError(err.message);
 				} else {
+					// This visually updates the post to reflect its pinned or unpinned state.
 					$(this).toggleClass('pinned', !isPinned);
+					
+					// Success message
 					app.alertSuccess('Topic ' + (!isPinned ? 'pinned' : 'unpinned') + ' successfully');
 				}
 			}.bind(this));
 		});
+
 		
 	}
 
