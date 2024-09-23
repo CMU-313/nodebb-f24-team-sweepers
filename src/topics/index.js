@@ -44,6 +44,15 @@ Topics.exists = async function (tids) {
 Topics.getTopicsFromSet = async function (set, uid, start, stop) {
 	const tids = await db.getSortedSetRevRange(set, start, stop);
 	const topics = await Topics.getTopics(tids, uid);
+
+	// Sort pinned posts to the top
+	topics.sort((a, b) => {
+		if (a.pinned && !b.pinned) return -1;
+		if (!a.pinned && b.pinned) return 1;
+		// Default sort (e.g., by date)
+		return b.lastposttime - a.lastposttime;
+	});
+	
 	Topics.calculateTopicIndices(topics, start);
 	return { topics: topics, nextStart: stop + 1 };
 };
@@ -53,6 +62,14 @@ Topics.getTopics = async function (tids, options) {
 	if (typeof options === 'object') {
 		uid = options.uid;
 	}
+
+	// Sort pinned posts to the top
+	topics.sort((a, b) => {
+		if (a.pinned && !b.pinned) return -1;
+		if (!a.pinned && b.pinned) return 1;
+		// Default sort (e.g., by date)
+		return b.lastposttime - a.lastposttime;
+	});
 
 	tids = await privileges.topics.filterTids('topics:read', tids, uid);
 	return await Topics.getTopicsByTids(tids, options);
@@ -104,6 +121,14 @@ Topics.getTopicsByTids = async function (tids, options) {
 			if (!userSettings[idx].showfullname) {
 				userObj.fullname = undefined;
 			}
+		});
+
+		// Sort pinned topics to the top
+		topics.sort((a, b) => {
+			if (a.pinned && !b.pinned) return -1;
+			if (!a.pinned && b.pinned) return 1;
+			// Default sort (e.g., by last post time)
+			return b.lastposttime - a.lastposttime;
 		});
 
 		return {
