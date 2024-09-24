@@ -146,6 +146,13 @@ define('forum/topic/threadTools', [
 			changeWatching('ignore');
 		});
 
+		// CHATGPT SUGGESTED CODE TESTING AQUI
+		// require(['pinButton'], function (PinButton) {
+		// PinButton.init(function () {
+		// console.log('Button state changed');
+		// });
+		// });
+
 		function changeWatching(type, state = 1) {
 			const method = state ? 'put' : 'del';
 			api[method](`/topics/${tid}/${type}`, {}, () => {
