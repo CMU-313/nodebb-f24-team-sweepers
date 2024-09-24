@@ -267,34 +267,25 @@ define('forum/topic/postTools', [
 			openChat($(this));
 		});
 
-		// This code block is added to pinning or unpinning a post when we click the watched button,
-		// but this should be updated to trigger when the actual pin button is implemented.
-		// Listen for a click event on the button within the post container.
-		// Note: "component='topic/watched'" is used to identify the watched button.
-		postContainer.on('click', '[component="topic/watched"]', function () {
-			
-			// Get the topic tid of post.
+		// This code block is added to pinning or unpinning a post when we click it
+		// Listen for a click event on the button within the post container. sends message to server
+		postContainer.on('click', '[component="post/pin-button"]', function () {
 			const tid = $(this).closest('[data-tid]').data('tid');
-			
-			// Determine whether the post is currently pinned.
 			const isPinned = $(this).hasClass('pinned');
-			
-			// Emit a 'topics.pin' event to the server to toggle the pin state of the topic.
+
+			console.log('Pin button clicked for tid:', tid, 'Current pin state:', isPinned);
+
 			socket.emit('topics.pin', { tid: tid, pin: !isPinned }, function (err) {
-				
-				// Error message for privaledges.
 				if (err) {
+					console.error('Error while pinning topic:', err.message);
 					app.alertError(err.message);
 				} else {
-					// This visually updates the post to reflect its pinned or unpinned state.
+					console.log('Successfully toggled pin for tid:', tid);
 					$(this).toggleClass('pinned', !isPinned);
-					
-					// Success message
 					app.alertSuccess('Topic ' + (!isPinned ? 'pinned' : 'unpinned') + ' successfully');
 				}
 			}.bind(this));
 		});
-
 		
 	}
 

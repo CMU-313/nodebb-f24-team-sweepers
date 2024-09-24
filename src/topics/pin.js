@@ -76,4 +76,66 @@ Pin.unpin = async function (tid, uid) {
     return await Pin.togglePin(tid, uid, false);
 };
 
+// Below are extra utility functions added by Dhanya which Sofian had initially deleted but may be useful.
+// Set pin expiry for a topic
+Pin.setPinExpiry = async function (tid, expiry, uid) {
+    // Validate expiry date
+    if (isNaN(parseInt(expiry, 10)) || expiry <= Date.now()) {
+        throw new Error('[[error:invalid-data]]');
+    }
+    // Check privileges
+    const topic = await topics.getTopicFields(tid, ['cid', 'uid']);
+    const isAdminOrMod = await privileges.categories.isAdminOrMod(topic.cid, uid);
+    if (!isAdminOrMod) {
+        throw new Error('[[error:no-privileges]]');
+    }
+    // Set pin expiry in the database
+    await topics.setTopicField(tid, 'pinExpiry', expiry);
+    plugins.hooks.fire('action:topic.setPinExpiry', { topic, uid, expiry });
+    return { tid, expiry };
+};
+// Check and expire pins
+Pin.checkPinExpiry = async function (tids) {
+    const expiryDates = await topics.getTopicsFields(tids, ['pinExpiry']);
+    const now = Date.now();
+    // Check and unpin topics that have expired
+    const unpinPromises = expiryDates.map(async (topicExpiry, idx) => {
+        if (topicExpiry && parseInt(topicExpiry.pinExpiry, 10) <= now) {
+            await Pin.unpin(tids[idx], 'system');
+            return null;
+        }
+        return tids[idx];
+    });
+    const filteredTids = (await Promise.all(unpinPromises)).filter(Boolean);
+    return filteredTids;
+};
+// Order pinned topics
+Pin.orderPinnedTopics = async function (uid, data) {
+    const { tid, order } = data;
+    const cid = await topics.getTopicField(tid, 'cid');
+    if (!cid || !tid || !utils.isNumber(order) || order < 0) {
+        throw new Error('[[error:invalid-data]]');
+    }
+    const isAdminOrMod = await privileges.categories.isAdminOrMod(cid, uid);
+    if (!isAdminOrMod) {
+        throw new Error('[[error:no-privileges]]');
+    }
+    const pinnedTids = await db.getSortedSetRange(`cid:${cid}:tids:pinned`, 0, -1);
+    const currentIndex = pinnedTids.indexOf(String(tid));
+    if (currentIndex === -1) {
+        return;
+    }
+    const newOrder = pinnedTids.length - order - 1;
+    // Move tid to the specified order
+    if (pinnedTids.length > 1) {
+        pinnedTids.splice(Math.max(0, newOrder), 0, pinnedTids.splice(currentIndex, 1)[0]);
+    }
+    await db.sortedSetAddBulk(
+        `cid:${cid}:tids:pinned`,
+        pinnedTids.map((tid, index) => index),
+        pinnedTids
+    );
+    return pinnedTids;
+};
+
 module.exports = Pin;

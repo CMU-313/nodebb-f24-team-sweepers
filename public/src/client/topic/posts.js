@@ -30,17 +30,13 @@ define('forum/topic/posts', [
 		data.loggedIn = !!app.user.uid;
 		data.privileges = ajaxify.data.privileges;
 
-		// If the topic is not scheduled, adjust the timestamp to avoid future dates.
-		// This ensures that the post appears as if it was created slightly in the past.
-		// The timestamp is set 1 second behind the current time to prevent the timeago 
-		// Plugin from showing it as being in the future.
-		data.posts[0].timestamp = data.posts[0].topic.scheduled ? data.posts[0].timestamp : Date.now() - 1;
-		// Convert the updated timestamp into ISO format to be used for display in the UI.
+		// if not a scheduled topic, prevent timeago in future by setting timestamp to 1 sec behind now
+		data.posts[0].timestamp = data.posts[0].topic.scheduled ? data.posts[0].timestamp : Date.now() - 1000;
 		data.posts[0].timestampISO = utils.toISOString(data.posts[0].timestamp);
 
-		// This block was added to manage the pin/unpin functionality for the topic.
-		// We extract the current 'pinned' state of the post and tid to send the 
-		// appropriate pin/unpin action via socket. 
+		// Handling the pin status of the post dynamically and the loading and rendering of posts
+		// when new messages are sent from the server
+		const isPinned = data.posts[0].pinned;
 		const tid = data.posts[0].tid;
 		socket.emit('topics.pin', { tid: tid, pin: !isPinned }, function (err) {
 			if (err) {
@@ -49,7 +45,7 @@ define('forum/topic/posts', [
 				app.alertSuccess('Topic ' + (!isPinned ? 'pinned' : 'unpinned') + ' successfully');
 			}
 		});
-
+		
 		Posts.modifyPostsByPrivileges(data.posts);
 
 		updatePostCounts(data.posts);
