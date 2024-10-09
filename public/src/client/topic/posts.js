@@ -29,23 +29,6 @@ define('forum/topic/posts', [
 
 		data.loggedIn = !!app.user.uid;
 		data.privileges = ajaxify.data.privileges;
-
-		// if not a scheduled topic, prevent timeago in future by setting timestamp to 1 sec behind now
-		data.posts[0].timestamp = data.posts[0].topic.scheduled ? data.posts[0].timestamp : Date.now() - 1000;
-		data.posts[0].timestampISO = utils.toISOString(data.posts[0].timestamp);
-
-		// Handling the pin status of the post dynamically and the loading and rendering of posts
-		// when new messages are sent from the server
-		const isPinned = data.posts[0].pinned;
-		const tid = data.posts[0].tid;
-		socket.emit('topics.pin', { tid: tid, pin: !isPinned }, function (err) {
-			if (err) {
-				app.alertError(err.message);
-			} else {
-				app.alertSuccess('Topic ' + (!isPinned ? 'pinned' : 'unpinned') + ' successfully');
-			}
-		});
-		
 		Posts.modifyPostsByPrivileges(data.posts);
 
 		updatePostCounts(data.posts);

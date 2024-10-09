@@ -266,27 +266,6 @@ define('forum/topic/postTools', [
 		postContainer.on('click', '[component="post/chat"]', function () {
 			openChat($(this));
 		});
-
-		// This code block is added to pinning or unpinning a post when we click it
-		// Listen for a click event on the button within the post container. sends message to server
-		postContainer.on('click', '[component="post/pin-button"]', function () {
-			const tid = $(this).closest('[data-tid]').data('tid');
-			const isPinned = $(this).hasClass('pinned');
-
-			console.log('Pin button clicked for tid:', tid, 'Current pin state:', isPinned);
-
-			socket.emit('topics.pin', { tid: tid, pin: !isPinned }, function (err) {
-				if (err) {
-					console.error('Error while pinning topic:', err.message);
-					app.alertError(err.message);
-				} else {
-					console.log('Successfully toggled pin for tid:', tid);
-					$(this).toggleClass('pinned', !isPinned);
-					app.alertSuccess('Topic ' + (!isPinned ? 'pinned' : 'unpinned') + ' successfully');
-				}
-			}.bind(this));
-		});
-		
 	}
 
 	async function onReplyClicked(button, tid) {
