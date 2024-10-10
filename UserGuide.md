@@ -6,9 +6,7 @@ This user guide provides detailed instructions on how to use the following new/i
 - Search Topics
 - Limit Topic Visibility to Specific User Groups
 
-**** TO DOs: ****
-- Add screenshots for each feature
-- Add pin topics info for your contributions
+
 - Sofian adds limit topic visibility related notes
     - Overview, How to Use, Use Case, Automated Tests
 
@@ -32,7 +30,6 @@ Unpin a Topic:
 #### Use Case:
 This feature is beneficial for keeping critical topics visible for easy access during discussions or for new members joining the conversation. Only admin users can pin and unpin topics, ensuring that the list remains organized and relevant for all users.
 
-
 #### Automated Tests
 Test Scenario: Pinned topics remain at the top of the list after applying filters to a page
 - Test Steps:
@@ -48,7 +45,7 @@ Test Scenario: Non admin users will not be able to see or use pin button functio
     2. Created test topic
     3. Verify that user won't be able to pin topic
 - Expected Result: The user does not have access to see the pin button, so they should not be able to use any of the functionality.
-- Automated Test Location: [test/topics.js] (https://github.com/CMU-313/nodebb-f24-team-sweepers/blob/sprint2-main/test/topics.js)
+- Automated Test Location: [test/topics.js](https://github.com/CMU-313/nodebb-f24-team-sweepers/blob/sprint2-main/test/topics.js)
 
 
 ### 2. Search Topics
@@ -74,4 +71,21 @@ Test Scenario: Search for a topic using specific keywords
     2. Observe the list of topics displayed.
     3. Verify that only topics containing the keyword or phrase are shown.
 - Expected Result: The list of topics should be filtered to display only topics that match the search criteria.
-- Automated Tests Location: N/A
+- Automated Tests Location: N/A, see [recorded demo](https://github.com/user-attachments/assets/2ba732c8-b89c-44af-b631-f0d1105a9fa1)
+
+### 3. Sofian Feature 3
+#### Overview:
+Description
+
+#### How to Use:
+1. Example
+2. 
+
+#### Use Case:
+
+#### Automated Tests
+Test Scenario:
+- Test Steps:
+    1. Example
+- Expected Result: Example
+- Automated Tests Location: [text](link)
