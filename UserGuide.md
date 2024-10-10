@@ -7,10 +7,6 @@ This user guide provides detailed instructions on how to use the following new/i
 - Limit Topic Visibility to Specific User Groups
 
 
-- Sofian adds limit topic visibility related notes
-    - Overview, How to Use, Use Case, Automated Tests
-
-
 ### 1. Pin Topics 
 #### Overview:
 The Pin Topics feature allows admin users to pin important topics to the top of the list for easy access and visibility. Pinned topics remain at the top of the list, even when new topics are added or existing topics are updated. The feature also persists across user sessions and accounts, ensuring that topics an admin user wishes to pin are always visible to all users.
@@ -31,7 +27,7 @@ Unpin a Topic:
 This feature is beneficial for keeping critical topics visible for easy access during discussions or for new members joining the conversation. Only admin users can pin and unpin topics, ensuring that the list remains organized and relevant for all users.
 
 #### Automated Tests
-Test Scenario: Pinned topics remain at the top of the list after applying filters to a page
+Test Scenario: Pinned topics remain at the top of the list after applying filters to a page (SPRINT 1 IMPLEMENTATION/TESTING ATTEMPT)
 - Test Steps:
     1. Pin a topic to the top of the list.
     2. Apply a filter to the page.
