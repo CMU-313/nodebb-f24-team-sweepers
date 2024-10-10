@@ -26,8 +26,19 @@ Unpin a Topic:
 #### Use Case:
 This feature is beneficial for keeping critical topics visible for easy access during discussions or for new members joining the conversation. Only admin users can pin and unpin topics, ensuring that the list remains organized and relevant for all users.
 
+#### Manual User Testing:
+To manually test the Pin Topics feature:
+
+1. Log in as an admin user.
+2. Navigate to a topic in any category.
+3. Pin the topic using the steps above and ensure it moves to the top.
+4. Log out, then log back in to confirm the topic remains pinned.
+5. Unpin the topic and verify it returns to its original position.
+
+Ensure that only admins can see the pin/unpin button by logging in with a non-admin account and verifying that the buttons are not visible.
+
 #### Automated Tests
-Test Scenario: Pinned topics remain at the top of the list after applying filters to a page (SPRINT 1 IMPLEMENTATION/TESTING ATTEMPT)
+Test Scenario 1: Pinned topics remain at the top of the list after applying filters to a page (SPRINT 1 IMPLEMENTATION/TESTING ATTEMPT)
 - Test Steps:
     1. Pin a topic to the top of the list.
     2. Apply a filter to the page.
@@ -35,13 +46,16 @@ Test Scenario: Pinned topics remain at the top of the list after applying filter
 - Expected Result: The pinned topic should remain at the top of the list after applying filters to the page.
 - Automated Tests Location: [test/topics.js](https://github.com/CMU-313/nodebb-f24-team-sweepers/blob/05d7d39c4e63629d040ded6889cbe497c1f195dd/test/topics.js), see [in PR](https://github.com/CMU-313/nodebb-f24-team-sweepers/pull/35/files#diff-9b41ba0f5d4d9a50e83e3539b03713f873869a24a0119f43698e052c584cb50c)
 
-Test Scenario: Non admin users will not be able to see or use pin button functionality
+Test Scenario 2: Non admin users will not be able to see or use pin button functionality
 - Test Steps: 
     1. Created user with no admin priviliges
     2. Created test topic
     3. Verify that user won't be able to pin topic
 - Expected Result: The user does not have access to see the pin button, so they should not be able to use any of the functionality.
 - Automated Test Location: [test/topics.js](https://github.com/CMU-313/nodebb-f24-team-sweepers/blob/sprint2-main/test/topics.js), see [in PR](https://github.com/CMU-313/nodebb-f24-team-sweepers/pull/44)
+
+#### Test Sufficiency Explanation:
+These automated tests ensure that the Pin Topics feature is working as expected by covering two critical scenarios: (1) ensuring that pinned topics remain in place even when filters are applied, and (2) confirming that only admin users can access this functionality. These scenarios provide robust coverage for both functionality and permission validation.
 
 
 ### 2. Search Topics
@@ -56,6 +70,15 @@ The Search Topics feature enables users to find specific topics quickly by enter
 #### Use Case:
 This feature is particularly useful for users who want to locate specific information quickly without scrolling through the entire list of topics.
 
+#### Manual User Testing:
+To manually test the Search Topics feature:
+
+1. Create a few topics with distinct titles.
+2. Enter a keyword from one of the topic titles into the search bar.
+3. Ensure that only topics matching the keyword appear in the list.
+4. Test with partial matches and confirm the search updates in real-time.
+
+
 #### Automated Tests
 The search functionality is implemented using jQuery to manipulate the DOM based on the topics rendered on the page, and it does not interact with any backend API endpoints. Due to the client-side nature of the search, writing automated tests for this feature was not applicable. We considered using JSDOM to create a simulated browser environment where the DOM manipulations could be tested directly. However, this conflicted with the existing test setup and required significant changes to the testing framework. As a result, manual testing was the most effective way to validate the search functionality. For more details on the decision to perform manual testing, please refer to the PR discussion for this feature [here](https://github.com/CMU-313/nodebb-f24-team-sweepers/pull/41).
 
@@ -69,6 +92,10 @@ Test Scenario: Search for a topic using specific keywords
 - Expected Result: The list of topics should be filtered to display only topics that match the search criteria.
 - Automated Tests Location: N/A, see [recorded demo](https://github.com/user-attachments/assets/2ba732c8-b89c-44af-b631-f0d1105a9fa1)
 
+#### Test Sufficiency Explanation:
+While automated tests for the search feature were not applicable due to the client-side implementation, manual testing has been thorough. Real-time keyword filtering has been validated through multiple test cases. A recorded demo of this feature is also provided to confirm the functional behavior.
+
+
 ### 3. Sofian Feature 3
 #### Overview:
 Description
@@ -79,9 +106,13 @@ Description
 
 #### Use Case:
 
+#### Manual User Testing:
+
 #### Automated Tests
 Test Scenario:
 - Test Steps:
     1. Example
 - Expected Result: Example
 - Automated Tests Location: [text](link)
+
+#### Test Sufficiency Explanation:
