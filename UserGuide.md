@@ -42,6 +42,13 @@ Test Scenario: Pinned topics remain at the top of the list after applying filter
 - Expected Result: The pinned topic should remain at the top of the list after applying filters to the page.
 - Automated Tests Location: [test/topics.js](https://github.com/CMU-313/nodebb-f24-team-sweepers/blob/05d7d39c4e63629d040ded6889cbe497c1f195dd/test/topics.js)
 
+Test Scenario: Non admin users will not be able to see or use pin button functionality
+- Test Steps: 
+    1. Created user with no admin priviliges
+    2. Created test topic
+    3. Verify that user won't be able to pin topic
+- Expected Result: The user does not have access to see the pin button, so they should not be able to use any of the functionality.
+- Automated Test Location: [test/topics.js] (https://github.com/CMU-313/nodebb-f24-team-sweepers/blob/sprint2-main/test/topics.js)
 
 
 ### 2. Search Topics
