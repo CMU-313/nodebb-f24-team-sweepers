@@ -742,6 +742,26 @@ describe('Topic\'s', () => {
 			assert.strictEqual(pinned, 1);
 		});
 
+		// Tests whether users who aren't admin can pin button (testing admin only restriction)
+		// CHATGPT PRODUCED CODE LINES 705-721
+		it('should not display pin button for regular users', async () => {
+			const regularUserUid = await User.create({ username: 'regularUser' });
+			const topic = await topics.post({
+				uid: adminUid,
+				title: 'Topic for pin button test',
+				content: 'Checking pin button visibility',
+				cid: categoryObj.cid,
+			});
+			const { tid } = topic.topicData;
+			try {
+				await apiTopics.pin({ uid: regularUserUid }, { tids: [tid], cid: categoryObj.cid });
+			} catch (err) {
+				assert.equal(err.message, '[[error:no-privileges]]');
+				return;
+			}
+			assert(false, 'Regular user should not have access to the pin button');
+		});
+
 		it('should move all topics', (done) => {
 			socketTopics.moveAll({ uid: adminUid }, { cid: moveCid, currentCid: categoryObj.cid }, (err) => {
 				assert.ifError(err);
