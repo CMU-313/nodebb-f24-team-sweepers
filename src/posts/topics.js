@@ -6,12 +6,20 @@ const user = require('../user');
 const utils = require('../utils');
 
 module.exports = function (Posts) {
+	// Code here modified in order to ensure that we only render posts
+	// For which the user is allowed to view
 	Posts.getPostsFromSet = async function (set, start, stop, uid, reverse) {
 		const pids = await Posts.getPidsFromSet(set, start, stop, reverse);
 		const posts = await Posts.getPostsByPids(pids, uid);
-		return await user.blocks.filter(uid, posts);
+		// Filter posts based on viewPermission
+		const filteredPosts = posts.filter((post) => {
+			if (post.viewPermission === 'all') return true;
+			if (post.viewPermission === 'moderators' && user.isModerator(uid)) return true;
+			if (post.viewPermission === 'admin' && user.isAdmin(uid)) return true;
+			return false;
+		});
+		return await user.blocks.filter(uid, filteredPosts);
 	};
-
 	Posts.isMain = async function (pids) {
 		const isArray = Array.isArray(pids);
 		pids = isArray ? pids : [pids];
