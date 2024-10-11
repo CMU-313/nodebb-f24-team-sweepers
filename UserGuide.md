@@ -96,17 +96,29 @@ Test Scenario: Search for a topic using specific keywords
 While automated tests for the search feature were not applicable due to the client-side implementation, manual testing has been thorough. Real-time keyword filtering has been validated through multiple test cases. A recorded demo of this feature is also provided to confirm the functional behavior.
 
 
-### 3. Sofian Feature 3
+### 3. Post Views By User Group
 #### Overview:
-Description
+The Limit Topic Visibility feature allows the visibility of specific posts or topics to be restricted based on user group permissions. Admins and moderators can set the visibility of posts to be viewed only by designated groups such as 'Admin,' 'Moderators,' or 'All.' This feature enhances privacy and ensures that sensitive or important posts are only accessible to the intended user groups.
 
 #### How to Use:
-1. Example
-2. 
+1. Setting Post Visibility:
+    1. Sign in as any user
+    2. Navigate to popular or recent posts page and click on "new topic"
+    3. Notice the "Viewed By..." button and click it to choose user group from dropdown (e.g., Admin, Moderators, All)
+    4. Save the post, and its visibility will be updated according to the selected group.
+
+2. Rendering Posts for Different User Groups:
+    1. Users who are part of the designated groups will automatically see the posts that are set to their group.
+    2. Posts not visible to a user’s group will not be shown in their topic list.
 
 #### Use Case:
+This feature is particularly useful for Nodebb in the context of courses and education. This can be used for users who are posing certain information that they want or is required to be restricted to specific user groups. For instance, moderators (instructures) may want to discuss administrative actions without the general user base (students) having access to those conversations.
 
 #### Manual User Testing:
+1. Create a post and set its visibility to a specific group (e.g., Admin or Moderators or All).
+2. Log in with a user account that belongs to the designated group and verify that the post is visible.
+3. Log in with a user account that does not belong to the designated group and verify that the post is not visible.
+4. Repeat the test for each group setting to ensure posts are correctly filtered by group.
 
 #### Automated Tests
 Test Scenario:
