@@ -54,9 +54,66 @@ Test Scenario 2: Non admin users will not be able to see or use pin button funct
 - Expected Result: The user does not have access to see the pin button, so they should not be able to use any of the functionality.
 - Automated Test Location: [test/topics.js](https://github.com/CMU-313/nodebb-f24-team-sweepers/blob/sprint2-main/test/topics.js), see [in PR](https://github.com/CMU-313/nodebb-f24-team-sweepers/pull/44)
 
-#### Test Sufficiency Explanation:
-These automated tests ensure that the Pin Topics feature is working as expected by covering two critical scenarios: (1) ensuring that pinned topics remain in place even when filters are applied, and (2) confirming that only admin users can access this functionality. These scenarios provide robust coverage for both functionality and permission validation.
+Test Scenario 3: Pinned posts persist after filtering over topics
+- Test Steps: 
+    1. Pin a topic
+    2. Apply topics filters over all the topics
+    3. Verify that topic is still pinned
+- Expected Result: The topic remians pinned regardless of filter applied.
+- Automated Test Location: [test/topics.js](https://github.com/CMU-313/nodebb-f24-team-sweepers/blob/sprint2-main/test/topics.js), see [in PR](https://github.com/CMU-313/nodebb-f24-team-sweepers/pull/47)
 
+Test Scenario 4: Pinned posts persist after session changes 
+- Test Steps:
+    1. Log in with a user
+    2. Pin a topic
+    3. Log out the user
+    4. Verify that topic is still pinned
+- Expected Result: The topic remians pinned regardless of session changes (login/logout)
+- Automated Test Location: [test/topics.js](https://github.com/CMU-313/nodebb-f24-team-sweepers/blob/sprint2-main/test/topics.js), see [in PR](https://github.com/CMU-313/nodebb-f24-team-sweepers/pull/47)
+
+Test Scenario 5: Pinned posts persist after change in user account
+- Test Steps:
+    1. Log in with a non-admin user
+    2. Pin a topic
+    3. Log in with different user
+    4. Verify that topic is still pinned
+- Expected Result: The topic remians pinned regardless of changes in user account
+- Automated Test Location: [test/topics.js](https://github.com/CMU-313/nodebb-f24-team-sweepers/blob/sprint2-main/test/topics.js), see [in PR](https://github.com/CMU-313/nodebb-f24-team-sweepers/pull/47)
+
+Test Scenario 6: Non-admins cannot pin a topic
+- Test Steps:
+    1. Log in with a user
+    2. Attempt to pin a topic
+    3. Assert that no privileges error is thrown.
+- Expected Result: The topic cannot be pinned by non-admin users
+- Automated Test Location: [test/topics.js](https://github.com/CMU-313/nodebb-f24-team-sweepers/blob/sprint2-main/test/topics.js), see [in PR](https://github.com/CMU-313/nodebb-f24-team-sweepers/pull/47)
+
+Test Scenario 7: Topics are automatically unpinned after expiry
+- Test Steps:
+    1. Set expiry date to 1 second from now
+    2. Pin a topic with this expiry
+    3. Stop execution for 1.1 seconds
+    4. Verify topic gets unpinned
+- Expected Result: The topic is automatically unpinned after expiry is passed
+- Automated Test Location: [test/topics.js](https://github.com/CMU-313/nodebb-f24-team-sweepers/blob/sprint2-main/test/topics.js), see [in PR](https://github.com/CMU-313/nodebb-f24-team-sweepers/pull/47)
+
+Test Scenario 8: Lastest pinned topic is on top of list
+- Test Steps:
+    1. Unpin existing topics
+    2. Pin a new topic
+    3. Verify that the pinned topic remains at the top of the list.
+- Expected Result: The newest pinned topic is on top of the list 
+- Automated Test Location: [test/topics.js](https://github.com/CMU-313/nodebb-f24-team-sweepers/blob/sprint2-main/test/topics.js), see [in PR](https://github.com/CMU-313/nodebb-f24-team-sweepers/pull/47)
+
+#### Test Sufficiency Explanation:
+The automated tests cover a comprehensive set of scenarios to ensure that the Pin Topics feature functions as intended under various conditions:
+
+ 1. Pinned Topics Behavior: Multiple scenarios test that pinned topics persist, even after actions such as applying filters (Scenario 3), changing user sessions (Scenario 4), and switching between user accounts (Scenario 5). This ensures that the feature maintains its core functionality regardless of how the user interacts with the interface.
+ 2. Admin Privileges and Access Control: The scenarios verify that only admin users have access to pinning functionality, and non-admin users cannot pin topics (Scenarios 2 & 6). This ensures proper access control and reinforces that the pinning feature is restricted to authorized users only.
+ 3. Topic Expiry: By testing the automatic unpinning of topics after expiration (Scenario 7), the suite ensures that the expiry feature is reliable and functions as designed.
+ 4. Order of Pinned Topics: Scenario 8 and Scenario 1 verify that the most recently pinned topic stays at the top of the list even if there are filters or sorting methods applied, ensuring the proper organization and prioritization of pinned topics.
+
+These scenarios provide robust coverage for both functionality and permission validation. They not only ensure all the acceptance criteria (pinned posts remain on top of list, only selected users can pin posts) are mainted but also test this criteria in a number of scenarios to ensure their coverage. Additionally extra functionality such as the automatic unpinning of expired topics is also tested successfully.
 
 ### 2. Search Topics
 #### Overview:
