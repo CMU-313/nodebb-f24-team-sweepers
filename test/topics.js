@@ -699,7 +699,6 @@ describe('Topic\'s', () => {
 			const pinned = await topics.getTopicField(newTopic.tid, 'pinned');
 			assert.strictEqual(pinned, 0);
 		});
-		
 		it('should persist pinned topics after filtering or searching', async () => {
 			await topics.tools.pin(newTopic.tid, adminUid);
 			const searchResults = await topics.search(topic.tid, 'test');
@@ -708,7 +707,6 @@ describe('Topic\'s', () => {
 		});
 
 		const jar = request.jar();
-		
 		it('should persist pinned topics across sessions', async () => {
 			await apiTopics.pin({ uid: adminUid }, { tids: [newTopic.tid], cid: categoryObj.cid });
 			await helpers.loginUser('admin', '123456');
@@ -716,7 +714,6 @@ describe('Topic\'s', () => {
 			const pinned = await topics.getTopicField(newTopic.tid, 'pinned');
 			assert.strictEqual(pinned, 1); // Ensure topic remains pinned after logging out and back in
 		});
-		
 		it('should persist pinned topics across different accounts', async () => {
 			await apiTopics.pin({ uid: adminUid }, { tids: [newTopic.tid], cid: categoryObj.cid });
 			await helpers.logoutUser(jar);
@@ -733,7 +730,6 @@ describe('Topic\'s', () => {
 				assert.strictEqual(err.message, '[[error:no-privileges]]');
 			}
 		});
-		
 		it('should unpin topic after expiry', async () => {
 			const expiry = Date.now() + 1000; // 1 second expiry
 			await topics.tools.setPinExpiry(newTopic.tid, expiry, adminUid);
@@ -935,7 +931,6 @@ describe('Topic\'s', () => {
 				done();
 			});
 		});
-		
 		it('should not do anything if topics are not pinned', (done) => {
 			socketTopics.orderPinnedTopics({ uid: adminUid }, { tid: tid3, order: 1 }, (err) => {
 				assert.ifError(err);
@@ -951,7 +946,6 @@ describe('Topic\'s', () => {
 			// Unpin any existing pinned topics first
 			const pinnedTopics = await db.getSortedSetRange(`cid:${categoryObj.cid}:tids:pinned`, 0, -1);
 			await Promise.all(pinnedTopics.map(tid => topics.tools.unpin(tid, adminUid)));
-		
 			// Now pin the topic and check if it's on top
 			await topics.tools.pin(tid3, adminUid);
 			const updatedPinnedTopics = await db.getSortedSetRange(`cid:${categoryObj.cid}:tids:pinned`, 0, -1);
@@ -2557,7 +2551,7 @@ describe('Topic\'s', () => {
 		it('should remove from topics:scheduled on purge', async () => {
 			const score = await db.sortedSetScore('topics:scheduled', topicData.tid);
 			assert(!score);
-		});		
+		});
 	});
 });
 

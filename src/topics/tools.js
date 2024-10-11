@@ -233,11 +233,11 @@ module.exports = function (Topics) {
 		const { lastposttime, timestamp, postcount, votes, viewcount } = await Topics.getTopicData(tid);
 		await db.sortedSetRemove(`cid:${cid}:tids:pinned`, tid);
 		await db.sortedSetAddBulk([
-				[`cid:${cid}:tids`, lastposttime, tid],
-				[`cid:${cid}:tids:create`, timestamp, tid],
-				[`cid:${cid}:tids:posts`, postcount, tid],
-				[`cid:${cid}:tids:votes`, votes || 0, tid],
-				[`cid:${cid}:tids:views`, viewcount, tid],
+			[`cid:${cid}:tids`, lastposttime, tid],
+			[`cid:${cid}:tids:create`, timestamp, tid],
+			[`cid:${cid}:tids:posts`, postcount, tid],
+			[`cid:${cid}:tids:votes`, votes || 0, tid],
+			[`cid:${cid}:tids:views`, viewcount, tid],
 		]);
 		await Topics.deleteTopicField(tid, 'pinExpiry');
 	}
