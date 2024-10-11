@@ -121,10 +121,20 @@ This feature is particularly useful for Nodebb in the context of courses and edu
 4. Repeat the test for each group setting to ensure posts are correctly filtered by group.
 
 #### Automated Tests
-Test Scenario:
+Test Scenario 1: Database correctly stores visibility settings for posts when user chooses it
 - Test Steps:
-    1. Example
-- Expected Result: Example
-- Automated Tests Location: [text](link)
+    1. Create a new post and set the visibility to 'Admin.'
+    2. Check the database to verify that the visibility field is stored correctly for the post.
+- Expected Result: The database should correctly store the visibility field with the appropriate user group for the post.
+- Automated Tests Location: [test/topics-viewers.js](https://github.com/CMU-313/nodebb-f24-team-sweepers/commit/bab5c2e3e87ede66b393edb8a21625ec7fbaae9d#diff-30dcabcf5275851208c62815618cb983d7809dbcc498612a8b7c77eeb03f0f5f)
+
+Test Scenario 2: Correct posts are rendered based on user group permissions
+- Test Steps:
+    1. Log in as a user belonging to the 'Admin' group.
+    2. Verify that posts marked as visible to 'Admin' are rendered.
+    3. Log in as a user from a different group (e.g., 'Moderators') and verify that posts for 'Admin' are not rendered for this user.
+- Expected Result: Posts are filtered correctly based on user permissions, and only posts the user is authorized to view are rendered.
+- Automated Tests Location: [test/topics-viewers.js](https://github.com/CMU-313/nodebb-f24-team-sweepers/commit/bab5c2e3e87ede66b393edb8a21625ec7fbaae9d#diff-30dcabcf5275851208c62815618cb983d7809dbcc498612a8b7c77eeb03f0f5f)
 
 #### Test Sufficiency Explanation:
+These tests ensure that the system correctly manages the visibility of posts at both the database level and when posts are rendered for users. Many tests for post creation pre-existed in the tests/topics.js file, but our implementation added two major steps (adding/setting new feild in database and rendering posts by current user group). The two test scenarios—checking database storage of visibility fields and verifying post rendering based on permissions—provide comprehensive coverage of the feature’s functionality.
