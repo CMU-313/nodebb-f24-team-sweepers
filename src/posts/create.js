@@ -35,6 +35,7 @@ module.exports = function (Posts) {
 			tid: tid,
 			content: content,
 			timestamp: timestamp,
+			viewedBy: data.viewedBy || 'All', // This is viewability of post. Default is all
 		};
 
 		if (data.toPid) {
