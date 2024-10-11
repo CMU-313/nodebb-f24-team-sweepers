@@ -109,33 +109,80 @@ module.exports = function (Topics) {
 		return topicData;
 	}
 
+	const max_pinned = 5;
+
 	// Pin a topic
 	topicTools.pin = async (tid, uid) => togglePin(tid, uid, true);
 
 	// Unpin a topic
 	topicTools.unpin = async (tid, uid) => togglePin(tid, uid, false);
 
+	// Toggle pin state
+	async function togglePin(tid, uid, pin) {
+		const { cid, scheduled } = await Topics.getTopicData(tid);
+
+		// validate whether pinning is possible
+		if (!cid) throw new Error('[[error:no-topic]]');
+		if (scheduled) throw new Error('[[error:cant-pin-scheduled]]');
+		if (uid !== 'system' && !await privileges.topics.isAdminOrMod(tid, uid)) throw new Error('[[error:no-privileges]]');
+
+		// Get the current number of pinned topics in the category
+		const pinnedTopicsCount = await db.sortedSetCard(`cid:${cid}:tids:pinned`);
+		if (pin && pinnedTopicsCount >= max_pinned) {
+			throw new Error(`[[error:max-pinned-limit-reached]]`);
+		}
+
+		// Set the 'pinned' field for the topic and log action in event log
+		await Topics.setTopicField(tid, 'pinned', pin ? 1 : 0);
+		Topics.events.log(tid, { type: pin ? 'pin' : 'unpin', uid });
+
+		// Update database
+		if (pin) {
+			await pinActions(cid, tid);
+		} else {
+			await unpinActions(cid, tid);
+		}
+
+		// Track count
+		if (pin) {
+			const pinCount = await Topics.getTopicField(tid, 'pinCount') || 0;
+			await Topics.setTopicField(tid, 'pinCount', pinCount + 1);
+		}
+		// Track pin history
+		await db.listAppend(`topic:${tid}:pinHistory`, JSON.stringify({
+			uid,
+			action: pin ? 'pinned' : 'unpinned',
+			timestamp: Date.now(),
+		}));
+		// Update db with user who pinned topic
+		await Topics.setTopicField(tid, pin ? 'pinnedBy' : 'unpinnedBy', uid);
+
+		// Trigger hook
+		plugins.hooks.fire('action:topic.pin', { tid, uid });
+		return { tid, pinned: pin };
+	}
+
 	// Set pin expiry
 	topicTools.setPinExpiry = async (tid, expiry, uid) => {
+		// Ensure timestamp is valid
 		if (isNaN(expiry) || expiry <= Date.now()) {
 			throw new Error('[[error:invalid-data]]');
 		}
-
 		const { cid } = await Topics.getTopicFields(tid, ['cid']);
-		const isAdminOrMod = await privileges.categories.isAdminOrMod(cid, uid);
-		if (!isAdminOrMod) {
-			throw new Error('[[error:no-privileges]]');
-		}
+		await checkAdminOrModPrivileges(cid, uid);
 
+		// Set pin exipiry and trigger hook for the same
 		await Topics.setTopicField(tid, 'pinExpiry', expiry);
 		plugins.hooks.fire('action:topic.setPinExpiry', { tid, uid });
 	};
 
 	// Check pin expiry
 	topicTools.checkPinExpiry = async (tids) => {
+		// Get current timstamp and expirty time for tids
 		const now = Date.now();
 		const expiry = await topics.getTopicsFields(tids, ['pinExpiry']);
 
+		// Check if any topics have expired - if so unpin it
 		tids = await Promise.all(tids.map(async (tid, idx) => {
 			if (expiry[idx] && expiry[idx] <= now) {
 				await togglePin(tid, 'system', false);
@@ -144,57 +191,64 @@ module.exports = function (Topics) {
 			return tid;
 		}));
 
+		// Filter out unpinned topics
 		return tids.filter(Boolean);
 	};
 
-	// Toggle pin state
-	async function togglePin(tid, uid, pin) {
-		const { cid, scheduled, lastposttime, timestamp, postcount, votes, viewcount } = await Topics.getTopicData(tid);
-		if (!cid) throw new Error('[[error:no-topic]]');
-		if (scheduled) throw new Error('[[error:cant-pin-scheduled]]');
-		if (uid !== 'system' && !await privileges.topics.isAdminOrMod(tid, uid)) throw new Error('[[error:no-privileges]]');
-
-		await Topics.setTopicField(tid, 'pinned', pin ? 1 : 0);
-		Topics.events.log(tid, { type: pin ? 'pin' : 'unpin', uid });
-
-		if (pin) {
-			await db.sortedSetAdd(`cid:${cid}:tids:pinned`, Date.now(), tid);
-			await db.sortedSetsRemove([`cid:${cid}:tids`, `cid:${cid}:tids:create`, `cid:${cid}:tids:posts`, `cid:${cid}:tids:votes`, `cid:${cid}:tids:views`], tid);
-		} else {
-			await db.sortedSetRemove(`cid:${cid}:tids:pinned`, tid);
-			await db.sortedSetAddBulk([
-				[`cid:${cid}:tids`, lastposttime, tid],
-				[`cid:${cid}:tids:create`, timestamp, tid],
-				[`cid:${cid}:tids:posts`, postcount, tid],
-				[`cid:${cid}:tids:votes`, votes || 0, tid],
-				[`cid:${cid}:tids:views`, viewcount, tid],
-			]);
-			await Topics.deleteTopicField(tid, 'pinExpiry');
-		}
-
-		plugins.hooks.fire('action:topic.pin', { tid, uid });
-		return { tid, pinned: pin };
-	}
-
 	// Order pinned topics
 	topicTools.orderPinnedTopics = async (uid, { tid, order }) => {
+		// Get category of the topic
 		const cid = await Topics.getTopicField(tid, 'cid');
 		if (!cid || order < 0) throw new Error('[[error:invalid-data]]');
 
-		const isAdminOrMod = await privileges.categories.isAdminOrMod(cid, uid);
-		if (!isAdminOrMod) throw new Error('[[error:no-privileges]]');
+		await checkAdminOrModPrivileges(cid, uid);
 
+		// Get current order of topics
 		const pinnedTids = await db.getSortedSetRange(`cid:${cid}:tids:pinned`, 0, -1);
 		const currentIndex = pinnedTids.indexOf(String(tid));
 		if (currentIndex === -1) return;
 
+		// Calculate new order position
 		const newOrder = Math.max(0, pinnedTids.length - order - 1);
 		if (pinnedTids.length > 1) {
 			pinnedTids.splice(newOrder, 0, pinnedTids.splice(currentIndex, 1)[0]);
 		}
 
+		// Only reorder if necessary
+		if (currentIndex !== newOrder && pinnedTids.length > 1) {
+			const [movedTid] = pinnedTids.splice(currentIndex, 1);
+			pinnedTids.splice(newOrder, 0, movedTid);
+		}
+
+		// Update pinned topics list with new order
 		await db.sortedSetAdd(`cid:${cid}:tids:pinned`, pinnedTids.map((_, index) => index), pinnedTids);
 	};
+
+	async function pinActions(cid, tid) {
+		await db.sortedSetAdd(`cid:${cid}:tids:pinned`, Date.now(), tid);
+		await db.sortedSetsRemove([`cid:${cid}:tids`, `cid:${cid}:tids:create`, `cid:${cid}:tids:posts`, `cid:${cid}:tids:votes`, `cid:${cid}:tids:views`], tid);
+	}
+
+	async function unpinActions(cid, tid) {
+		const { lastposttime, timestamp, postcount, votes, viewcount } = await Topics.getTopicData(tid);
+		await db.sortedSetRemove(`cid:${cid}:tids:pinned`, tid);
+		await db.sortedSetAddBulk([
+				[`cid:${cid}:tids`, lastposttime, tid],
+				[`cid:${cid}:tids:create`, timestamp, tid],
+				[`cid:${cid}:tids:posts`, postcount, tid],
+				[`cid:${cid}:tids:votes`, votes || 0, tid],
+				[`cid:${cid}:tids:views`, viewcount, tid],
+		]);
+		await Topics.deleteTopicField(tid, 'pinExpiry');
+	}
+
+	// Helper function to check admin or moderator privileges
+	async function checkAdminOrModPrivileges(cid, uid) {
+		const isAdminOrMod = await privileges.categories.isAdminOrMod(cid, uid);
+		if (!isAdminOrMod) {
+			throw new Error('[[error:no-privileges]]');
+		}
+	}
 
 	topicTools.move = async function (tid, data) {
 		const cid = parseInt(data.cid, 10);
