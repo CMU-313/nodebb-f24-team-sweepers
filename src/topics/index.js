@@ -53,7 +53,6 @@ Topics.getTopics = async function (tids, options) {
 	if (typeof options === 'object') {
 		uid = options.uid;
 	}
-
 	tids = await privileges.topics.filterTids('topics:read', tids, uid);
 	return await Topics.getTopicsByTids(tids, options);
 };
@@ -105,7 +104,6 @@ Topics.getTopicsByTids = async function (tids, options) {
 				userObj.fullname = undefined;
 			}
 		});
-
 		return {
 			topics,
 			teasers,

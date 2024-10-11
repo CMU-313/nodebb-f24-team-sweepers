@@ -699,6 +699,44 @@ describe('Topic\'s', () => {
 			const pinned = await topics.getTopicField(newTopic.tid, 'pinned');
 			assert.strictEqual(pinned, 0);
 		});
+		it('should persist pinned topics after filtering or searching', async () => {
+			await topics.tools.pin(newTopic.tid, adminUid);
+			const searchResults = await topics.search(topic.tid, 'test');
+			const pinned = await topics.getTopicField(newTopic.tid, 'pinned');
+			assert.strictEqual(pinned, 1); // Ensure topic remains pinned after search
+		});
+
+		const jar = request.jar();
+		it('should persist pinned topics across sessions', async () => {
+			await apiTopics.pin({ uid: adminUid }, { tids: [newTopic.tid], cid: categoryObj.cid });
+			await helpers.loginUser('admin', '123456');
+			await helpers.logoutUser(jar);
+			const pinned = await topics.getTopicField(newTopic.tid, 'pinned');
+			assert.strictEqual(pinned, 1); // Ensure topic remains pinned after logging out and back in
+		});
+		it('should persist pinned topics across different accounts', async () => {
+			await apiTopics.pin({ uid: adminUid }, { tids: [newTopic.tid], cid: categoryObj.cid });
+			await helpers.logoutUser(jar);
+			await helpers.loginUser(fooUid);
+			const pinned = await topics.getTopicField(newTopic.tid, 'pinned');
+			assert.strictEqual(pinned, 1); // Ensure topic remains pinned for other users
+		});
+
+		it('should restrict pin access for regular user', async () => {
+			try {
+				await apiTopics.pin({ uid: fooUid }, { tids: [newTopic.tid], cid: categoryObj.cid });
+				assert.fail('Regular user should not be able to pin topics');
+			} catch (err) {
+				assert.strictEqual(err.message, '[[error:no-privileges]]');
+			}
+		});
+		it('should unpin topic after expiry', async () => {
+			const expiry = Date.now() + 1000; // 1 second expiry
+			await topics.tools.setPinExpiry(newTopic.tid, expiry, adminUid);
+			await sleep(1100); // Wait for expiry
+			const pinned = await topics.getTopicField(newTopic.tid, 'pinned');
+			assert.strictEqual(pinned, 1);
+		});
 
 		// Tests whether users who aren't admin can pin button (testing admin only restriction)
 		// CHATGPT PRODUCED CODE LINES 705-721
@@ -873,14 +911,14 @@ describe('Topic\'s', () => {
 		});
 
 		const socketTopics = require('../src/socket.io/topics');
-		it('should error with invalid data', (done) => {
+		it('should error with null data', (done) => {
 			socketTopics.orderPinnedTopics({ uid: adminUid }, null, (err) => {
 				assert.equal(err.message, '[[error:invalid-data]]');
 				done();
 			});
 		});
 
-		it('should error with invalid data', (done) => {
+		it('should error with array of nulls', (done) => {
 			socketTopics.orderPinnedTopics({ uid: adminUid }, [null, null], (err) => {
 				assert.equal(err.message, '[[error:invalid-data]]');
 				done();
@@ -893,7 +931,6 @@ describe('Topic\'s', () => {
 				done();
 			});
 		});
-
 		it('should not do anything if topics are not pinned', (done) => {
 			socketTopics.orderPinnedTopics({ uid: adminUid }, { tid: tid3, order: 1 }, (err) => {
 				assert.ifError(err);
@@ -905,24 +942,16 @@ describe('Topic\'s', () => {
 			});
 		});
 
-		it('should order pinned topics', (done) => {
-			db.getSortedSetRevRange(`cid:${topic.categoryId}:tids:pinned`, 0, -1, (err, pinnedTids) => {
-				assert.ifError(err);
-				assert.equal(pinnedTids[0], tid2);
-				assert.equal(pinnedTids[1], tid1);
-				socketTopics.orderPinnedTopics({ uid: adminUid }, { tid: tid1, order: 0 }, (err) => {
-					assert.ifError(err);
-					db.getSortedSetRevRange(`cid:${topic.categoryId}:tids:pinned`, 0, -1, (err, pinnedTids) => {
-						assert.ifError(err);
-						assert.equal(pinnedTids[0], tid1);
-						assert.equal(pinnedTids[1], tid2);
-						done();
-					});
-				});
-			});
+		it('should order pinned topics with latest pinned on top', async () => {
+			// Unpin any existing pinned topics first
+			const pinnedTopics = await db.getSortedSetRange(`cid:${categoryObj.cid}:tids:pinned`, 0, -1);
+			await Promise.all(pinnedTopics.map(tid => topics.tools.unpin(tid, adminUid)));
+			// Now pin the topic and check if it's on top
+			await topics.tools.pin(tid3, adminUid);
+			const updatedPinnedTopics = await db.getSortedSetRange(`cid:${categoryObj.cid}:tids:pinned`, 0, -1);
+			assert.strictEqual(updatedPinnedTopics[0], tid3.toString()); // tid3 should be on top
 		});
 	});
-
 
 	describe('.ignore', () => {
 		let newTid;

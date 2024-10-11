@@ -54,7 +54,6 @@ modsController.flags.list = async function (req, res) {
 
 	const AdminModeratedCidVal = adminModCid(isAdminOrGlobalMod, moderatedCids.length);
 	if ((!(isAdminOrGlobalMod || !!moderatedCids.length))) {
-		console.log('KAREN GONZALEZ');
 		return helpers.notAllowed(req, res);
 	}
 
