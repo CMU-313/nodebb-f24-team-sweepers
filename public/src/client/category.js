@@ -50,9 +50,72 @@ define('forum/category', [
 			},
 		});
 
+		initalizeCategorySearch();
+
 		hooks.fire('action:topics.loaded', { topics: ajaxify.data.topics });
 		hooks.fire('action:category.loaded', { cid: ajaxify.data.cid });
 	};
+
+	function initalizeCategorySearch() {
+		const searchBox = $('#topicSearchInput');
+		if (!searchBox.length) {
+			return;
+		}
+
+		const searchButton = $('.search-button');
+
+		// Perform search on input change
+		searchBox.on('input', function () {
+			const searchTerm = $(this).val().toLowerCase();
+			performTopicSearch(searchTerm);
+		});
+
+		// Perform search on enter key press
+		searchBox.on('keypress', function (e) {
+			if (e.key === 'Enter') {
+				const searchTerm = $(this).val().toLowerCase();
+				performTopicSearch(searchTerm);
+			}
+		});
+
+		// Perform search when button is clicked
+		searchButton.on('click', function () {
+			const searchTerm = searchBox.val().toLowerCase();
+			performTopicSearch(searchTerm);
+		});
+	}
+
+	function performTopicSearch(searchTerm) {
+		const term = searchTerm.toLowerCase();
+
+		const $topics = $('[component="category/topic"]');
+
+		// Filter the topics based on the search term
+		const $matchedTopics = $topics.filter(function () {
+			const topicText = $(this).find('h3[component="topic/header"]').text().toLowerCase(); // Get the topic text
+			const metaContent = $(this).find('meta[itemprop="name"]').attr('content') ?
+				$(this).find('meta[itemprop="name"]').attr('content').toLowerCase() : ''; // Get meta content if it exists
+
+			// True if either topic text or meta content includes search term
+			return topicText.includes(term) || metaContent.includes(term);
+		});
+
+		// Show matched topics and hide others
+		$topics.addClass('hidden');
+		$matchedTopics.removeClass('hidden');
+
+		// Handle case where no topics match the search term
+		if ($matchedTopics.length === 0) {
+			if ($('[component="category/topic/no-matches"]').length === 0) {
+				$(`<div component="category/topic/no-matches" class="alert alert-info">No topics match the search term "${searchTerm}".</div>`)
+					.insertAfter('[component="category/topic"]:last');
+			} else {
+				$('[component="category/topic/no-matches"]').removeClass('hidden');
+			}
+		} else {
+			$('[component="category/topic/no-matches"]').addClass('hidden');
+		}
+	}
 
 	function handleScrollToTopicIndex() {
 		let topicIndex = ajaxify.data.topicIndex;

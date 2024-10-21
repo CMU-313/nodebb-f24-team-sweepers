@@ -9,6 +9,7 @@ define('forum/account/blocks', [
 	const Blocks = {};
 
 	Blocks.init = function () {
+		console.log('ALANNA CAO');
 		header.init();
 		const blockListEl = $('[component="blocks/search/list"]');
 		const startTypingEl = blockListEl.find('[component="blocks/start-typing"]');
@@ -29,25 +30,7 @@ define('forum/account/blocks', [
 				searchBy: 'username',
 				paginate: false,
 			}, function (err, data) {
-				if (err) {
-					return alerts.error(err);
-				}
-				if (!data.users.length) {
-					noUsersEl.removeClass('hidden');
-					return;
-				}
-				noUsersEl.addClass('hidden');
-				// Only show first 10 matches
-				if (data.matchCount > 10) {
-					data.users.length = 10;
-				}
-
-				app.parseAndTranslate('account/blocks', 'edit', {
-					edit: data.users,
-				}, function (html) {
-					blockListEl.find('[component="blocks/search/match"]').remove();
-					html.insertAfter(noUsersEl);
-				});
+				handleUserSearchResponse(err, data, blockListEl, noUsersEl);
 			});
 		}, 200));
 
@@ -65,6 +48,28 @@ define('forum/account/blocks', [
 			Blocks.refreshList();
 		});
 	};
+
+	function handleUserSearchResponse(err, data, blockListEl, noUsersEl) {
+		if (err) {
+			return alerts.error(err);
+		}
+		if (!data.users.length) {
+			noUsersEl.removeClass('hidden');
+			return;
+		}
+		noUsersEl.addClass('hidden');
+		// Only show first 10 matches
+		if (data.matchCount > 10) {
+			data.users.length = 10;
+		}
+
+		app.parseAndTranslate('account/blocks', 'edit', {
+			edit: data.users,
+		}, function (html) {
+			blockListEl.find('[component="blocks/search/match"]').remove();
+			html.insertAfter(noUsersEl);
+		});
+	}
 
 	async function performBlock(uid, action) {
 		return socket.emit('user.toggleBlock', {
