@@ -1,5 +1,6 @@
 
 'use strict';
+
 // I made changes in quick start module. Specifically
 // I added to the partials a file called composer-formatting.tpl
 // This file creates the viewed by UI component and its dropdown
