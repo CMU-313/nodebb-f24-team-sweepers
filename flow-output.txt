@@ -1,0 +1,475 @@
+Error ------------------------------------------------------------------------------------------------ Gruntfile.js:4:23
+
+Cannot resolve module `nconf`. [cannot-resolve-module]
+
+   4| const nconf = require('nconf');
+                            ^^^^^^^
+
+
+Error ------------------------------------------------------------------------------------------------ Gruntfile.js:9:25
+
+Cannot resolve module `winston`. [cannot-resolve-module]
+
+   9| const winston = require('winston');
+                              ^^^^^^^^^
+
+
+Error ----------------------------------------------------------------------------------------------- Gruntfile.js:25:28
+
+Cannot build a typed interface for this module. You should annotate the exports of this module with types. Missing type
+annotation at identifier: [signature-verification-failure]
+
+   25| module.exports = function (grunt) {
+                                  ^^^^^
+
+
+Error ----------------------------------------------------------------------------------------------- Gruntfile.js:42:44
+
+Missing an annotation on implicit `this` parameter of function. [missing-this-annot]
+
+   42| 	grunt.registerTask('init', async function () {
+                                                  ^^
+
+
+Error ----------------------------------------------------------------------------------------------- Gruntfile.js:47:31
+
+Cannot call `plugins.getActive` because property `getActive` is missing in exports [1]. [prop-missing]
+
+   Gruntfile.js:47:31
+   47| 			pluginList = await plugins.getActive();
+                                     ^^^^^^^^^
+
+References:
+   src/plugins/index.js
+   ^^^^^^^^^^^^^^^^^^^^ [1]
+
+
+Error ---------------------------------------------------------------------------------------------- Gruntfile.js:171:68
+
+Cannot call `require(...).build` because no more than 2 arguments are expected by async function [1]. [extra-arg]
+
+   Gruntfile.js:171:68
+                                                                           v---------
+   171| 		require('./src/meta/build').build(compiling, { webpack: false }, (err) => {
+   172| 			if (err) {
+   173| 				winston.error(err.stack);
+   174| 			}
+   175| 			if (worker) {
+   176| 				worker.send({ compiling: compiling });
+   177| 			}
+   178| 		});
+        		^
+
+References:
+   src/meta/build.js:127:23
+   127| exports.build = async function (targets, options) {
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+
+
+Error ---------------------------------------------------------------------------------------------- Gruntfile.js:171:69
+
+An annotation on `err` is required because Flow cannot infer its type from local context. [missing-local-annot]
+
+   171| 		require('./src/meta/build').build(compiling, { webpack: false }, (err) => {
+                                                                            ^^^
+
+
+Error ---------------------------------------------------------------------------------------------- Gruntfile.js:182:24
+
+Missing an annotation on `pluginList`. [missing-local-annot]
+
+   182| function addBaseThemes(pluginList) {
+                               ^^^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------------- Gruntfile.js:190:16
+
+The parameter passed to `require` must be a string literal. [unsupported-syntax]
+
+   190| 			baseTheme = require(`${themeId}/theme`).baseTheme;
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Error ----------------------------------------------------------------------------------------------------- app.js:24:23
+
+Cannot resolve module `nconf`. [cannot-resolve-module]
+
+   24| const nconf = require('nconf');
+                             ^^^^^^^
+
+
+Error ----------------------------------------------------------------------------------------------------- app.js:30:25
+
+Cannot resolve module `winston`. [cannot-resolve-module]
+
+   30| const winston = require('winston');
+                               ^^^^^^^^^
+
+
+Error ----------------------------------------------------------------------------------------------------- app.js:41:27
+
+Cannot call `file.existsSync` because property `existsSync` is missing in exports [1]. [prop-missing]
+
+   app.js:41:27
+   41| const configExists = file.existsSync(configFile) || (nconf.get('url') && nconf.get('secret') && nconf.get('database'));
+                                 ^^^^^^^^^^
+
+References:
+   src/file.js
+   ^^^^^^^^^^^ [1]
+
+
+Error ----------------------------------------------------------------------------------------------------- app.js:61:27
+
+Cannot call `require(...).install` because property `install` is missing in exports [1]. [prop-missing]
+
+   app.js:61:27
+   61| 	require('./install/web').install(nconf.get('port'));
+                                 ^^^^^^^
+
+References:
+   install/web.js
+   ^^^^^^^^^^^^^^ [1]
+
+
+Error ----------------------------------------------------------------------------------------------------- app.js:81:25
+
+Cannot call `require(...).start` because property `start` is missing in exports [1]. [prop-missing]
+
+   app.js:81:25
+   81| 	require('./src/start').start();
+                               ^^^^^
+
+References:
+   src/start.js
+   ^^^^^^^^^^^^ [1]
+
+
+Error ---------------------------------------------------------------------------------------- install/databases.js:3:24
+
+Cannot resolve module `prompt`. [cannot-resolve-module]
+
+   3| const prompt = require('prompt');
+                             ^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------- install/databases.js:4:25
+
+Cannot resolve module `winston`. [cannot-resolve-module]
+
+   4| const winston = require('winston');
+                              ^^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------- install/databases.js:7:42
+
+Cannot get `require(...).questions` because property `questions` is missing in exports [1]. [prop-missing]
+
+   install/databases.js:7:42
+   7| 	redis: require('../src/database/redis').questions,
+                                               ^^^^^^^^^
+
+References:
+   src/database/redis.js
+   ^^^^^^^^^^^^^^^^^^^^^ [1]
+
+
+Error ---------------------------------------------------------------------------------------- install/databases.js:8:42
+
+Cannot get `require(...).questions` because property `questions` is missing in exports [1]. [prop-missing]
+
+   install/databases.js:8:42
+   8| 	mongo: require('../src/database/mongo').questions,
+                                               ^^^^^^^^^
+
+References:
+   src/database/mongo.js
+   ^^^^^^^^^^^^^^^^^^^^^ [1]
+
+
+Error ---------------------------------------------------------------------------------------- install/databases.js:9:48
+
+Cannot get `require(...).questions` because property `questions` is missing in exports [1]. [prop-missing]
+
+   install/databases.js:9:48
+   9| 	postgres: require('../src/database/postgres').questions,
+                                                     ^^^^^^^^^
+
+References:
+   src/database/postgres.js
+   ^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+
+
+Error --------------------------------------------------------------------------------------- install/databases.js:12:34
+
+Cannot build a typed interface for this module. You should annotate the exports of this module with types. Missing type
+annotation at identifier: [signature-verification-failure]
+
+   12| module.exports = async function (config) {
+                                        ^^^^^^
+
+
+Error --------------------------------------------------------------------------------------- install/databases.js:12:41
+
+Cannot build a typed interface for this module. You should annotate the exports of this module with types. Missing type
+annotation at function return: [signature-verification-failure]
+
+   12| module.exports = async function (config) {
+                                               
+
+
+Error --------------------------------------------------------------------------------------- install/databases.js:18:34
+
+Missing an annotation on `config`. [missing-local-annot]
+
+   18| async function getDatabaseConfig(config) {
+                                        ^^^^^^
+
+
+Error --------------------------------------------------------------------------------------- install/databases.js:42:29
+
+Missing an annotation on `config`. [missing-local-annot]
+
+   42| function saveDatabaseConfig(config, databaseConfig) {
+                                   ^^^^^^
+
+
+Error --------------------------------------------------------------------------------------- install/databases.js:42:37
+
+Missing an annotation on `databaseConfig`. [missing-local-annot]
+
+   42| function saveDatabaseConfig(config, databaseConfig) {
+                                           ^^^^^^^^^^^^^^
+
+
+Error --------------------------------------------------------------------------------------- install/databases.js:81:39
+
+Cannot call `questions.redis.concat` because property `concat` is missing in `void` (due to access of non-existent
+property `questions`) [1]. [incompatible-use]
+
+   install/databases.js:81:39
+   81| 	const allQuestions = questions.redis.concat(questions.mongo).concat(questions.postgres);
+                                             ^^^^^^
+
+References:
+   install/databases.js:7:9
+    7| 	redis: require('../src/database/redis').questions,
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+
+
+Error -------------------------------------------------------------------------- install/docker/mongodb-user-init.js:1:1
+
+Cannot resolve name `db`. [cannot-resolve-name]
+
+   1| db.createUser( { user: 'nodebb', pwd: 'nodebb', roles: [ { role: 'readWrite', db: 'nodebb' }, { role: 'clusterMonitor', db: 'admin' } ] } )
+      ^^
+
+
+Error ---------------------------------------------------------------------------------------------- install/web.js:3:25
+
+Cannot resolve module `winston`. [cannot-resolve-module]
+
+   3| const winston = require('winston');
+                              ^^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------------- install/web.js:4:25
+
+Cannot resolve module `express`. [cannot-resolve-module]
+
+   4| const express = require('express');
+                              ^^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------------- install/web.js:5:28
+
+Cannot resolve module `body-parser`. [cannot-resolve-module]
+
+   5| const bodyParser = require('body-parser');
+                                 ^^^^^^^^^^^^^
+
+
+Error --------------------------------------------------------------------------------------------- install/web.js:10:25
+
+Cannot resolve module `webpack`. [cannot-resolve-module]
+
+   10| const webpack = require('webpack');
+                               ^^^^^^^^^
+
+
+Error --------------------------------------------------------------------------------------------- install/web.js:11:23
+
+Cannot resolve module `nconf`. [cannot-resolve-module]
+
+   11| const nconf = require('nconf');
+                             ^^^^^^^
+
+
+Error --------------------------------------------------------------------------------------------- install/web.js:13:28
+
+Cannot resolve module `benchpressjs`. [cannot-resolve-module]
+
+   13| const Benchpress = require('benchpressjs');
+                                  ^^^^^^^^^^^^^^
+
+
+Error --------------------------------------------------------------------------------------------- install/web.js:14:28
+
+Cannot resolve module `mkdirp`. [cannot-resolve-module]
+
+   14| const { mkdirp } = require('mkdirp');
+                                  ^^^^^^^^
+
+
+Error --------------------------------------------------------------------------------------------- install/web.js:48:13
+
+`module` may only be used as part of a legal top level export statement [invalid-export]
+
+   48| const web = module.exports;
+                   ^^^^^^
+
+
+Error --------------------------------------------------------------------------------------------- install/web.js:99:24
+
+Missing an annotation on `port`. [missing-local-annot]
+
+   99| function launchExpress(port) {
+                              ^^^^
+
+
+Error -------------------------------------------------------------------------------------------- install/web.js:113:29
+
+Missing an annotation on `req`. [missing-local-annot]
+
+   113| async function testDatabase(req, res) {
+                                    ^^^
+
+
+Error -------------------------------------------------------------------------------------------- install/web.js:113:34
+
+Missing an annotation on `res`. [missing-local-annot]
+
+   113| async function testDatabase(req, res) {
+                                         ^^^
+
+
+Error --------------------------------------------------------------------------------------------- install/web.js:118:8
+
+The parameter passed to `require` must be a string literal. [unsupported-syntax]
+
+   118| 		db = require(`../src/database/${dbName}`);
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Error --------------------------------------------------------------------------------------------- install/web.js:122:9
+
+Cannot assign `req.query[key]` to `opts[key.replace(...)]` because an index signature declaring the expected key / value
+type is missing in object literal [1]. [prop-missing]
+
+   install/web.js:122:9
+   122| 			opts[key.replace(`${dbName}:`, '')] = req.query[key];
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+References:
+   install/web.js:120:16
+   120| 		const opts = {};
+                       ^^ [1]
+
+
+Error -------------------------------------------------------------------------------------------- install/web.js:134:15
+
+Missing an annotation on `req`. [missing-local-annot]
+
+   134| function ping(req, res) {
+                      ^^^
+
+
+Error -------------------------------------------------------------------------------------------- install/web.js:134:20
+
+Missing an annotation on `res`. [missing-local-annot]
+
+   134| function ping(req, res) {
+                           ^^^
+
+
+Error -------------------------------------------------------------------------------------------- install/web.js:138:18
+
+Missing an annotation on `req`. [missing-local-annot]
+
+   138| function welcome(req, res) {
+                         ^^^
+
+
+Error -------------------------------------------------------------------------------------------- install/web.js:138:23
+
+Missing an annotation on `res`. [missing-local-annot]
+
+   138| function welcome(req, res) {
+                              ^^^
+
+
+Error -------------------------------------------------------------------------------------------- install/web.js:141:21
+
+The parameter passed to `require` must be a string literal. [unsupported-syntax]
+
+   141| 		const questions = require(`../src/database/${databaseName}`).questions.filter(question => question && !question.hideOnWebInstall);
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Error -------------------------------------------------------------------------------------------- install/web.js:166:18
+
+Missing an annotation on `req`. [missing-local-annot]
+
+   166| function install(req, res) {
+                         ^^^
+
+
+Error -------------------------------------------------------------------------------------------- install/web.js:166:23
+
+Missing an annotation on `res`. [missing-local-annot]
+
+   166| function install(req, res) {
+                              ^^^
+
+
+Error --------------------------------------------------------------------------------------------------- loader.js:3:23
+
+Cannot resolve module `nconf`. [cannot-resolve-module]
+
+   3| const nconf = require('nconf');
+                            ^^^^^^^
+
+
+Error --------------------------------------------------------------------------------------------------- loader.js:8:27
+
+Cannot resolve module `logrotate-stream`. [cannot-resolve-module]
+
+   8| const logrotate = require('logrotate-stream');
+                                ^^^^^^^^^^^^^^^^^^
+
+
+Error --------------------------------------------------------------------------------------------------- loader.js:9:28
+
+Cannot resolve module `mkdirp`. [cannot-resolve-module]
+
+   9| const { mkdirp } = require('mkdirp');
+                                 ^^^^^^^^
+
+
+Error --------------------------------------------------------------------------------------------------- loader.js:36:8
+
+Cannot assign function to `Loader.init` because property `init` is missing in object literal [1]. [prop-missing]
+
+   loader.js:36:8
+   36| Loader.init = function () {
+              ^^^^
+
+References:
+   loader.js:33:16
+   33| const Loader = {};
+                      ^^ [1]
+
+
+
+... 19491 more errors (only 50 out of 19541 errors displayed)
+To see all errors, re-run Flow with --show-all-errors
