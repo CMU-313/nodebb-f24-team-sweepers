@@ -17,6 +17,22 @@
         "coverage": "nyc report --reporter=text-lcov > ./coverage/lcov.info",
         "coveralls": "nyc report --reporter=text-lcov | coveralls && rm -r coverage"
     },
+    "standard": {
+        "globals": [
+            "describe",
+            "it",
+            "before",
+            "after"
+        ],
+        "ignore": [
+            "dist/",
+            "node_modules/",
+            "test/"
+        ],
+        "env": {
+            "jest": true
+        }
+    },
     "nyc": {
         "exclude": [
             "src/upgrades/*",
@@ -155,8 +171,10 @@
     },
     "devDependencies": {
         "@apidevtools/swagger-parser": "10.1.0",
+        "@babel/eslint-parser": "^7.25.9",
         "@commitlint/cli": "19.3.0",
         "@commitlint/config-angular": "19.3.0",
+        "babel-eslint": "^10.1.0",
         "coveralls": "3.1.1",
         "eslint": "8.57.0",
         "eslint-config-nodebb": "0.2.1",
