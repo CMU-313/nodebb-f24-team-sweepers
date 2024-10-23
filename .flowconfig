@@ -5,6 +5,15 @@
 .*/lib/.*
 .*/coverage/.*
 .*/tests/.*
+.*/types/.*
+.*/logs/.*
+.*/install/.*
+.*/loader.js
+.*/require-main.js
+.*/webpack.installer.js
+.*/commitlint.config.js
+.*/app.js
+.*/Gruntfile.js
 
 [include]
 ./src
