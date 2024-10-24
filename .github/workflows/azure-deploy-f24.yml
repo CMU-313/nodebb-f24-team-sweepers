@@ -50,7 +50,7 @@ jobs:
 
       - name: Install frontend repo
         run: |
-          npm i https://github.com/CMU-313/nodebb-frontend-f24-team-sweepers.git
+          npm install https://github.com/CMU-313/nodebb-frontend-f24-team-sweepers.git
 
       - name: Build 
         run: |
