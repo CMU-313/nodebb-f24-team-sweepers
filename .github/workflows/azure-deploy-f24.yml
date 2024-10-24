@@ -27,7 +27,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: true  # Initialize submodules
           fetch-depth: 0  # Fetch the full repository to avoid shallow clone issues
     
       - name: Set up Node.js version
@@ -50,10 +49,7 @@ jobs:
       - name: Install NodeBB dependencies
         run: npm install
   
-      - name: Update submodules
-        run: git submodule update --init --recursive --verbose
-
-      - name: Install frontend submodule
+      - name: Install theme dependencies
         run: |
           cd nodebb-theme-quickstart  # Navigate to submodule directory
           npm install  # Install frontend repo dependencies
