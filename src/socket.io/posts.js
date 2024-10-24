@@ -28,7 +28,10 @@ SocketPosts.getRawPost = async function (socket, pid) {
 };
 
 SocketPosts.getPostSummaryByIndex = async function (socket, data) {
-	sockets.warnDeprecated(socket, 'GET /api/v3/posts/byIndex/:index/summary?tid=:tid');
+	sockets.warnDeprecated(
+		socket,
+		'GET /api/v3/posts/byIndex/:index/summary?tid=:tid'
+	);
 
 	if (data.index < 0) {
 		data.index = 0;
@@ -37,7 +40,11 @@ SocketPosts.getPostSummaryByIndex = async function (socket, data) {
 	if (data.index === 0) {
 		pid = await topics.getTopicField(data.tid, 'mainPid');
 	} else {
-		pid = await db.getSortedSetRange(`tid:${data.tid}:posts`, data.index - 1, data.index - 1);
+		pid = await db.getSortedSetRange(
+			`tid:${data.tid}:posts`,
+			data.index - 1,
+			data.index - 1
+		);
 	}
 	pid = Array.isArray(pid) ? pid[0] : pid;
 	if (!pid) {
@@ -55,7 +62,11 @@ SocketPosts.getPostTimestampByIndex = async function (socket, data) {
 	if (data.index === 0) {
 		pid = await topics.getTopicField(data.tid, 'mainPid');
 	} else {
-		pid = await db.getSortedSetRange(`tid:${data.tid}:posts`, data.index - 1, data.index - 1);
+		pid = await db.getSortedSetRange(
+			`tid:${data.tid}:posts`,
+			data.index - 1,
+			data.index - 1
+		);
 	}
 	pid = Array.isArray(pid) ? pid[0] : pid;
 	const topicPrivileges = await privileges.topics.get(data.tid, socket.uid);
@@ -104,7 +115,11 @@ SocketPosts.accept = async function (socket, data) {
 	await canEditQueue(socket, data, 'accept');
 	const result = await posts.submitFromQueue(data.id);
 	if (result && socket.uid !== parseInt(result.uid, 10)) {
-		await sendQueueNotification('post-queue-accepted', result.uid, `/post/${result.pid}`);
+		await sendQueueNotification(
+			'post-queue-accepted',
+			result.uid,
+			`/post/${result.pid}`
+		);
 	}
 	await logQueueEvent(socket, result, 'accept');
 };
@@ -142,7 +157,12 @@ SocketPosts.notify = async function (socket, data) {
 	await canEditQueue(socket, data, 'notify');
 	const result = await posts.getFromQueue(data.id);
 	if (result) {
-		await sendQueueNotification('post-queue-notify', result.uid, `/post-queue/${data.id}`, validator.escape(String(data.message)));
+		await sendQueueNotification(
+			'post-queue-notify',
+			result.uid,
+			`/post-queue/${data.id}`,
+			validator.escape(String(data.message))
+		);
 	}
 };
 
@@ -160,9 +180,9 @@ async function canEditQueue(socket, data, action) {
 }
 
 async function sendQueueNotification(type, targetUid, path, notificationText) {
-	const bodyShort = notificationText ?
-		translator.compile(`notifications:${type}`, notificationText) :
-		translator.compile(`notifications:${type}`);
+	const bodyShort = notificationText
+		? translator.compile(`notifications:${type}`, notificationText)
+		: translator.compile(`notifications:${type}`);
 	const notifData = {
 		type: type,
 		nid: `${type}-${targetUid}-${path}`,

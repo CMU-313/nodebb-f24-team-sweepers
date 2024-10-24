@@ -27,8 +27,12 @@ const templateToData = {
 		noItemsFoundKey: '[[user:has-no-posts]]',
 		crumb: '[[global:posts]]',
 		getSets: async function (callerUid, userData) {
-			const cids = await categories.getCidsByPrivilege('categories:cid', callerUid, 'topics:read');
-			return cids.map(c => `cid:${c}:uid:${userData.uid}:pids`);
+			const cids = await categories.getCidsByPrivilege(
+				'categories:cid',
+				callerUid,
+				'topics:read'
+			);
+			return cids.map((c) => `cid:${c}:uid:${userData.uid}:pids`);
 		},
 	},
 	'account/upvoted': {
@@ -52,17 +56,31 @@ const templateToData = {
 		noItemsFoundKey: '[[user:has-no-best-posts]]',
 		crumb: '[[global:best]]',
 		getSets: async function (callerUid, userData) {
-			const cids = await categories.getCidsByPrivilege('categories:cid', callerUid, 'topics:read');
-			return cids.map(c => `cid:${c}:uid:${userData.uid}:pids:votes`);
+			const cids = await categories.getCidsByPrivilege(
+				'categories:cid',
+				callerUid,
+				'topics:read'
+			);
+			return cids.map((c) => `cid:${c}:uid:${userData.uid}:pids:votes`);
 		},
 		getTopics: async (sets, req, start, stop) => {
-			let pids = await db.getSortedSetRevRangeByScore(sets, start, stop - start + 1, '+inf', 1);
+			let pids = await db.getSortedSetRevRangeByScore(
+				sets,
+				start,
+				stop - start + 1,
+				'+inf',
+				1
+			);
 			pids = await privileges.posts.filter('topics:read', pids, req.uid);
-			const postObjs = await posts.getPostSummaryByPids(pids, req.uid, { stripTags: false });
+			const postObjs = await posts.getPostSummaryByPids(pids, req.uid, {
+				stripTags: false,
+			});
 			return { posts: postObjs, nextStart: stop + 1 };
 		},
 		getItemCount: async (sets) => {
-			const counts = await Promise.all(sets.map(set => db.sortedSetCount(set, 1, '+inf')));
+			const counts = await Promise.all(
+				sets.map((set) => db.sortedSetCount(set, 1, '+inf'))
+			);
 			return counts.reduce((acc, val) => acc + val, 0);
 		},
 	},
@@ -71,17 +89,31 @@ const templateToData = {
 		noItemsFoundKey: '[[user:has-no-controversial-posts]]',
 		crumb: '[[global:controversial]]',
 		getSets: async function (callerUid, userData) {
-			const cids = await categories.getCidsByPrivilege('categories:cid', callerUid, 'topics:read');
-			return cids.map(c => `cid:${c}:uid:${userData.uid}:pids:votes`);
+			const cids = await categories.getCidsByPrivilege(
+				'categories:cid',
+				callerUid,
+				'topics:read'
+			);
+			return cids.map((c) => `cid:${c}:uid:${userData.uid}:pids:votes`);
 		},
 		getTopics: async (sets, req, start, stop) => {
-			let pids = await db.getSortedSetRangeByScore(sets, start, stop - start + 1, '-inf', -1);
+			let pids = await db.getSortedSetRangeByScore(
+				sets,
+				start,
+				stop - start + 1,
+				'-inf',
+				-1
+			);
 			pids = await privileges.posts.filter('topics:read', pids, req.uid);
-			const postObjs = await posts.getPostSummaryByPids(pids, req.uid, { stripTags: false });
+			const postObjs = await posts.getPostSummaryByPids(pids, req.uid, {
+				stripTags: false,
+			});
 			return { posts: postObjs, nextStart: stop + 1 };
 		},
 		getItemCount: async (sets) => {
-			const counts = await Promise.all(sets.map(set => db.sortedSetCount(set, '-inf', -1)));
+			const counts = await Promise.all(
+				sets.map((set) => db.sortedSetCount(set, '-inf', -1))
+			);
 			return counts.reduce((acc, val) => acc + val, 0);
 		},
 	},
@@ -108,10 +140,11 @@ const templateToData = {
 			const sortSet = map[sort];
 			let tids = await db.getSortedSetRevRange(set, 0, -1);
 			const scores = await db.sortedSetScores(sortSet, tids);
-			tids = tids.map((tid, i) => ({ tid: tid, score: scores[i] }))
+			tids = tids
+				.map((tid, i) => ({ tid: tid, score: scores[i] }))
 				.sort((a, b) => b.score - a.score)
 				.slice(start, stop + 1)
-				.map(t => t.tid);
+				.map((t) => t.tid);
 
 			const topicsData = await topics.getTopics(tids, req.uid);
 			topics.calculateTopicIndices(topicsData, start);
@@ -131,8 +164,12 @@ const templateToData = {
 		noItemsFoundKey: '[[user:has-no-topics]]',
 		crumb: '[[global:topics]]',
 		getSets: async function (callerUid, userData) {
-			const cids = await categories.getCidsByPrivilege('categories:cid', callerUid, 'topics:read');
-			return cids.map(c => `cid:${c}:uid:${userData.uid}:tids`);
+			const cids = await categories.getCidsByPrivilege(
+				'categories:cid',
+				callerUid,
+				'topics:read'
+			);
+			return cids.map((c) => `cid:${c}:uid:${userData.uid}:tids`);
 		},
 	},
 };
@@ -181,10 +218,15 @@ async function getPostsFromUserSet(template, req, res) {
 	const { username, userslug } = payload;
 	const settings = await user.getSettings(req.uid);
 
-	const itemsPerPage = data.type === 'topics' ? settings.topicsPerPage : settings.postsPerPage;
+	const itemsPerPage =
+		data.type === 'topics' ? settings.topicsPerPage : settings.postsPerPage;
 	const start = (page - 1) * itemsPerPage;
 	const stop = start + itemsPerPage - 1;
-	const sets = await data.getSets(req.uid, { uid: res.locals.uid, username, userslug });
+	const sets = await data.getSets(req.uid, {
+		uid: res.locals.uid,
+		username,
+		userslug,
+	});
 	let result;
 	if (plugins.hooks.hasListeners('filter:account.getPostsFromUserSet')) {
 		result = await plugins.hooks.fire('filter:account.getPostsFromUserSet', {
@@ -214,9 +256,12 @@ async function getPostsFromUserSet(template, req, res) {
 
 	payload.noItemsFoundKey = data.noItemsFoundKey;
 	payload.title = `[[pages:${template}, ${username}]]`;
-	payload.breadcrumbs = helpers.buildBreadcrumbs([{ text: username, url: `/user/${userslug}` }, { text: data.crumb }]);
+	payload.breadcrumbs = helpers.buildBreadcrumbs([
+		{ text: username, url: `/user/${userslug}` },
+		{ text: data.crumb },
+	]);
 	payload.showSort = template === 'account/watched';
-	const baseUrl = (req.baseUrl + req.path.replace(/^\/api/, ''));
+	const baseUrl = req.baseUrl + req.path.replace(/^\/api/, '');
 	payload.sortOptions = [
 		{ url: `${baseUrl}?sort=votes`, name: '[[global:votes]]' },
 		{ url: `${baseUrl}?sort=posts`, name: '[[global:posts]]' },
@@ -235,7 +280,10 @@ async function getItemData(sets, data, req, start, stop) {
 	if (data.getTopics) {
 		return await data.getTopics(sets, req, start, stop);
 	}
-	const method = data.type === 'topics' ? topics.getTopicsFromSet : posts.getPostSummariesFromSet;
+	const method =
+		data.type === 'topics'
+			? topics.getTopicsFromSet
+			: posts.getPostSummariesFromSet;
 	return await method(sets, req.uid, start, stop);
 }
 

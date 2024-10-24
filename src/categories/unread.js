@@ -9,7 +9,7 @@ module.exports = function (Categories) {
 		if (!Array.isArray(cids) || !cids.length || parseInt(uid, 10) <= 0) {
 			return;
 		}
-		let keys = cids.map(cid => `cid:${cid}:read_by_uid`);
+		let keys = cids.map((cid) => `cid:${cid}:read_by_uid`);
 		const hasRead = await db.isMemberOfSets(keys, uid);
 		keys = keys.filter((key, index) => !hasRead[index]);
 		await db.setsAdd(keys, uid);
@@ -26,18 +26,22 @@ module.exports = function (Categories) {
 
 	Categories.hasReadCategories = async function (cids, uid) {
 		// TODO: remove in 4.0
-		console.warn('[deprecated] Categories.hasReadCategories deprecated, see Categories.setUnread');
+		console.warn(
+			'[deprecated] Categories.hasReadCategories deprecated, see Categories.setUnread'
+		);
 		if (parseInt(uid, 10) <= 0) {
 			return cids.map(() => false);
 		}
 
-		const sets = cids.map(cid => `cid:${cid}:read_by_uid`);
+		const sets = cids.map((cid) => `cid:${cid}:read_by_uid`);
 		return await db.isMemberOfSets(sets, uid);
 	};
 
 	Categories.hasReadCategory = async function (cid, uid) {
 		// TODO: remove in 4.0
-		console.warn('[deprecated] Categories.hasReadCategory deprecated, see Categories.setUnread');
+		console.warn(
+			'[deprecated] Categories.hasReadCategory deprecated, see Categories.setUnread'
+		);
 		if (parseInt(uid, 10) <= 0) {
 			return false;
 		}

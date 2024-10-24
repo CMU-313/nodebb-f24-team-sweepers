@@ -1,6 +1,5 @@
 'use strict';
 
-
 const async = require('async');
 const assert = require('assert');
 const db = require('../mocks/databasemock');
@@ -35,7 +34,7 @@ describe('Key methods', () => {
 		});
 	});
 
-	it('should return multiple keys and null if key doesn\'t exist', async () => {
+	it("should return multiple keys and null if key doesn't exist", async () => {
 		const data = await db.mget(['doesnotexist', 'testKey']);
 		assert.deepStrictEqual(data, [null, 'testValue']);
 	});
@@ -65,14 +64,11 @@ describe('Key methods', () => {
 	});
 
 	it('should work for an array of keys', async () => {
-		assert.deepStrictEqual(
-			await db.exists(['testKey', 'doesnotexist']),
-			[true, false]
-		);
-		assert.deepStrictEqual(
-			await db.exists([]),
-			[]
-		);
+		assert.deepStrictEqual(await db.exists(['testKey', 'doesnotexist']), [
+			true,
+			false,
+		]);
+		assert.deepStrictEqual(await db.exists([]), []);
 	});
 
 	describe('scan', () => {
@@ -116,66 +112,78 @@ describe('Key methods', () => {
 	});
 
 	it('should delete all keys passed in', (done) => {
-		async.parallel([
-			function (next) {
-				db.set('key1', 'value1', next);
-			},
-			function (next) {
-				db.set('key2', 'value2', next);
-			},
-		], (err) => {
-			if (err) {
-				return done(err);
-			}
-			db.deleteAll(['key1', 'key2'], function (err) {
-				assert.ifError(err);
-				assert.equal(arguments.length, 1);
-				async.parallel({
-					key1exists: function (next) {
-						db.exists('key1', next);
-					},
-					key2exists: function (next) {
-						db.exists('key2', next);
-					},
-				}, (err, results) => {
+		async.parallel(
+			[
+				function (next) {
+					db.set('key1', 'value1', next);
+				},
+				function (next) {
+					db.set('key2', 'value2', next);
+				},
+			],
+			(err) => {
+				if (err) {
+					return done(err);
+				}
+				db.deleteAll(['key1', 'key2'], function (err) {
 					assert.ifError(err);
-					assert.equal(results.key1exists, false);
-					assert.equal(results.key2exists, false);
-					done();
+					assert.equal(arguments.length, 1);
+					async.parallel(
+						{
+							key1exists: function (next) {
+								db.exists('key1', next);
+							},
+							key2exists: function (next) {
+								db.exists('key2', next);
+							},
+						},
+						(err, results) => {
+							assert.ifError(err);
+							assert.equal(results.key1exists, false);
+							assert.equal(results.key2exists, false);
+							done();
+						}
+					);
 				});
-			});
-		});
+			}
+		);
 	});
 
 	it('should delete all sorted set elements', (done) => {
-		async.parallel([
-			function (next) {
-				db.sortedSetAdd('deletezset', 1, 'value1', next);
-			},
-			function (next) {
-				db.sortedSetAdd('deletezset', 2, 'value2', next);
-			},
-		], (err) => {
-			if (err) {
-				return done(err);
-			}
-			db.delete('deletezset', (err) => {
-				assert.ifError(err);
-				async.parallel({
-					key1exists: function (next) {
-						db.isSortedSetMember('deletezset', 'value1', next);
-					},
-					key2exists: function (next) {
-						db.isSortedSetMember('deletezset', 'value2', next);
-					},
-				}, (err, results) => {
+		async.parallel(
+			[
+				function (next) {
+					db.sortedSetAdd('deletezset', 1, 'value1', next);
+				},
+				function (next) {
+					db.sortedSetAdd('deletezset', 2, 'value2', next);
+				},
+			],
+			(err) => {
+				if (err) {
+					return done(err);
+				}
+				db.delete('deletezset', (err) => {
 					assert.ifError(err);
-					assert.equal(results.key1exists, false);
-					assert.equal(results.key2exists, false);
-					done();
+					async.parallel(
+						{
+							key1exists: function (next) {
+								db.isSortedSetMember('deletezset', 'value1', next);
+							},
+							key2exists: function (next) {
+								db.isSortedSetMember('deletezset', 'value2', next);
+							},
+						},
+						(err, results) => {
+							assert.ifError(err);
+							assert.equal(results.key1exists, false);
+							assert.equal(results.key2exists, false);
+							done();
+						}
+					);
 				});
-			});
-		});
+			}
+		);
 	});
 
 	describe('increment', () => {
@@ -249,21 +257,26 @@ describe('Key methods', () => {
 		});
 
 		it('should rename multiple keys', (done) => {
-			db.sortedSetAdd('zsettorename', [1, 2, 3], ['value1', 'value2', 'value3'], (err) => {
-				assert.ifError(err);
-				db.rename('zsettorename', 'newzsetname', (err) => {
+			db.sortedSetAdd(
+				'zsettorename',
+				[1, 2, 3],
+				['value1', 'value2', 'value3'],
+				(err) => {
 					assert.ifError(err);
-					db.exists('zsettorename', (err, exists) => {
+					db.rename('zsettorename', 'newzsetname', (err) => {
 						assert.ifError(err);
-						assert(!exists);
-						db.getSortedSetRange('newzsetname', 0, -1, (err, values) => {
+						db.exists('zsettorename', (err, exists) => {
 							assert.ifError(err);
-							assert.deepEqual(['value1', 'value2', 'value3'], values);
-							done();
+							assert(!exists);
+							db.getSortedSetRange('newzsetname', 0, -1, (err, values) => {
+								assert.ifError(err);
+								assert.deepEqual(['value1', 'value2', 'value3'], values);
+								done();
+							});
 						});
 					});
-				});
-			});
+				}
+			);
 		});
 
 		it('should not error if old key does not exist', (done) => {
@@ -358,11 +371,13 @@ describe('Key methods', () => {
 				assert.ifError(err);
 				db.pttl('testKey', (err, pttl) => {
 					assert.ifError(err);
-					assert.equal(Math.round(86400000 / 1000000), Math.round(pttl / 1000000));
+					assert.equal(
+						Math.round(86400000 / 1000000),
+						Math.round(pttl / 1000000)
+					);
 					done();
 				});
 			});
 		});
 	});
 });
-

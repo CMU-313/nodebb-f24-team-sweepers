@@ -31,7 +31,10 @@ Topics.create = async (req, res) => {
 Topics.reply = async (req, res) => {
 	const id = await lockPosting(req, '[[error:already-posting]]');
 	try {
-		const payload = await api.topics.reply(req, { ...req.body, tid: req.params.tid });
+		const payload = await api.topics.reply(req, {
+			...req.body,
+			tid: req.params.tid,
+		});
 		helpers.formatApiResponse(200, res, payload);
 	} finally {
 		await db.deleteObjectField('locks', id);
@@ -123,23 +126,32 @@ Topics.deleteTags = async (req, res) => {
 };
 
 Topics.getThumbs = async (req, res) => {
-	helpers.formatApiResponse(200, res, await api.topics.getThumbs(req, { ...req.params }));
+	helpers.formatApiResponse(
+		200,
+		res,
+		await api.topics.getThumbs(req, { ...req.params })
+	);
 };
 
 Topics.addThumb = async (req, res) => {
 	// todo: move controller logic to src/api/topics.js
-	await api.topics._checkThumbPrivileges({ tid: req.params.tid, uid: req.user.uid });
+	await api.topics._checkThumbPrivileges({
+		tid: req.params.tid,
+		uid: req.user.uid,
+	});
 
 	const files = await uploadsController.uploadThumb(req, res); // response is handled here
 
 	// Add uploaded files to topic zset
 	if (files && files.length) {
-		await Promise.all(files.map(async (fileObj) => {
-			await topics.thumbs.associate({
-				id: req.params.tid,
-				path: fileObj.path || fileObj.url,
-			});
-		}));
+		await Promise.all(
+			files.map(async (fileObj) => {
+				await topics.thumbs.associate({
+					id: req.params.tid,
+					path: fileObj.path || fileObj.url,
+				});
+			})
+		);
 	}
 };
 
@@ -149,7 +161,11 @@ Topics.migrateThumbs = async (req, res) => {
 		to: req.body.tid,
 	});
 
-	helpers.formatApiResponse(200, res, await api.topics.getThumbs(req, { tid: req.body.tid }));
+	helpers.formatApiResponse(
+		200,
+		res,
+		await api.topics.getThumbs(req, { tid: req.body.tid })
+	);
 };
 
 Topics.deleteThumb = async (req, res) => {

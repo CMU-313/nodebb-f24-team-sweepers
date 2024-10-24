@@ -30,20 +30,20 @@ const groups = require('../groups');
 /* Assorted */
 Meta.userOrGroupExists = async function (slug) {
 	const isArray = Array.isArray(slug);
-	if ((isArray && slug.some(slug => !slug)) || (!isArray && !slug)) {
+	if ((isArray && slug.some((slug) => !slug)) || (!isArray && !slug)) {
 		throw new Error('[[error:invalid-data]]');
 	}
 
-	slug = isArray ? slug.map(s => slugify(s, false)) : slugify(slug);
+	slug = isArray ? slug.map((s) => slugify(s, false)) : slugify(slug);
 
 	const [userExists, groupExists] = await Promise.all([
 		user.existsBySlug(slug),
 		groups.existsBySlug(slug),
 	]);
 
-	return isArray ?
-		slug.map((s, i) => userExists[i] || groupExists[i]) :
-		(userExists || groupExists);
+	return isArray
+		? slug.map((s, i) => userExists[i] || groupExists[i])
+		: userExists || groupExists;
 };
 
 if (nconf.get('isPrimary')) {
@@ -65,7 +65,9 @@ function restart() {
 			action: 'restart',
 		});
 	} else {
-		winston.error('[meta.restart] Could not restart, are you sure NodeBB was started with `./nodebb start`?');
+		winston.error(
+			'[meta.restart] Could not restart, are you sure NodeBB was started with `./nodebb start`?'
+		);
 	}
 }
 

@@ -1,4 +1,3 @@
-
 'use strict';
 
 // I made changes in quick start module. Specifically
@@ -42,7 +41,10 @@ module.exports = function (Topics) {
 			topicData.tags = data.tags.join(',');
 		}
 
-		const result = await plugins.hooks.fire('filter:topic.create', { topic: topicData, data: data });
+		const result = await plugins.hooks.fire('filter:topic.create', {
+			topic: topicData,
+			data: data,
+		});
 		topicData = result.topic;
 		await db.setObject(`topic:${topicData.tid}`, topicData);
 
@@ -60,23 +62,34 @@ module.exports = function (Topics) {
 
 		await Promise.all([
 			db.sortedSetsAdd(timestampedSortedSetKeys, timestamp, topicData.tid),
-			db.sortedSetsAdd([
-				'topics:views', 'topics:posts', 'topics:votes',
-				`cid:${topicData.cid}:tids:votes`,
-				`cid:${topicData.cid}:tids:posts`,
-				`cid:${topicData.cid}:tids:views`,
-			], 0, topicData.tid),
+			db.sortedSetsAdd(
+				[
+					'topics:views',
+					'topics:posts',
+					'topics:votes',
+					`cid:${topicData.cid}:tids:votes`,
+					`cid:${topicData.cid}:tids:posts`,
+					`cid:${topicData.cid}:tids:views`,
+				],
+				0,
+				topicData.tid
+			),
 			user.addTopicIdToUser(topicData.uid, topicData.tid, timestamp),
 			db.incrObjectField(`category:${topicData.cid}`, 'topic_count'),
 			db.incrObjectField('global', 'topicCount'),
 			Topics.createTags(data.tags, topicData.tid, timestamp),
-			scheduled ? Promise.resolve() : categories.updateRecentTid(topicData.cid, topicData.tid),
+			scheduled
+				? Promise.resolve()
+				: categories.updateRecentTid(topicData.cid, topicData.tid),
 		]);
 		if (scheduled) {
 			await Topics.scheduled.pin(tid, topicData);
 		}
 
-		plugins.hooks.fire('action:topic.save', { topic: _.clone(topicData), data: data });
+		plugins.hooks.fire('action:topic.save', {
+			topic: _.clone(topicData),
+			data: data,
+		});
 		return topicData.tid;
 	};
 
@@ -102,8 +115,10 @@ module.exports = function (Topics) {
 		data.tags = await Topics.filterTags(data.tags, data.cid);
 		if (!data.fromQueue && !isAdmin) {
 			Topics.checkContent(data.content);
-			if (!await posts.canUserPostContentWithLinks(uid, data.content)) {
-				throw new Error(`[[error:not-enough-reputation-to-post-links, ${meta.config['min:rep:post-links']}]]`);
+			if (!(await posts.canUserPostContentWithLinks(uid, data.content))) {
+				throw new Error(
+					`[[error:not-enough-reputation-to-post-links, ${meta.config['min:rep:post-links']}]]`
+				);
 			}
 		}
 
@@ -152,10 +167,18 @@ module.exports = function (Topics) {
 		}
 
 		analytics.increment(['topics', `topics:byCid:${topicData.cid}`]);
-		plugins.hooks.fire('action:topic.post', { topic: topicData, post: postData, data: data });
+		plugins.hooks.fire('action:topic.post', {
+			topic: topicData,
+			post: postData,
+			data: data,
+		});
 
 		if (parseInt(uid, 10) && !topicData.scheduled) {
-			user.notifications.sendTopicNotificationToFollowers(uid, topicData, postData);
+			user.notifications.sendTopicNotificationToFollowers(
+				uid,
+				topicData,
+				postData
+			);
 			Topics.notifyTagFollowers(postData, uid);
 			categories.notifyCategoryFollowers(postData, uid);
 		}
@@ -186,8 +209,10 @@ module.exports = function (Topics) {
 		if (!data.fromQueue && !isAdmin) {
 			await user.isReadyToPost(uid, data.cid);
 			Topics.checkContent(data.content);
-			if (!await posts.canUserPostContentWithLinks(uid, data.content)) {
-				throw new Error(`[[error:not-enough-reputation-to-post-links, ${meta.config['min:rep:post-links']}]]`);
+			if (!(await posts.canUserPostContentWithLinks(uid, data.content))) {
+				throw new Error(
+					`[[error:not-enough-reputation-to-post-links, ${meta.config['min:rep:post-links']}]]`
+				);
 			}
 		}
 
@@ -214,14 +239,21 @@ module.exports = function (Topics) {
 
 			Topics.notifyFollowers(postData, uid, {
 				type: 'new-reply',
-				bodyShort: translator.compile('notifications:user-posted-to', displayname, postData.topic.title),
+				bodyShort: translator.compile(
+					'notifications:user-posted-to',
+					displayname,
+					postData.topic.title
+				),
 				nid: `new_post:tid:${postData.topic.tid}:pid:${postData.pid}:uid:${uid}`,
 				mergeId: `notifications:user-posted-to|${postData.topic.tid}`,
 			});
 		}
 
 		analytics.increment(['posts', `posts:byCid:${data.cid}`]);
-		plugins.hooks.fire('action:topic.reply', { post: _.clone(postData), data: data });
+		plugins.hooks.fire('action:topic.reply', {
+			post: _.clone(postData),
+			data: data,
+		});
 
 		return postData;
 	};
@@ -229,12 +261,19 @@ module.exports = function (Topics) {
 	async function onNewPost(postData, data) {
 		const { tid, uid } = postData;
 		await Topics.markAsRead([tid], uid);
-		const [
-			userInfo,
-			topicInfo,
-		] = await Promise.all([
+		const [userInfo, topicInfo] = await Promise.all([
 			posts.getUserInfoForPosts([postData.uid], uid),
-			Topics.getTopicFields(tid, ['tid', 'uid', 'title', 'slug', 'cid', 'postcount', 'mainPid', 'scheduled', 'tags']),
+			Topics.getTopicFields(tid, [
+				'tid',
+				'uid',
+				'title',
+				'slug',
+				'cid',
+				'postcount',
+				'mainPid',
+				'scheduled',
+				'tags',
+			]),
 			Topics.addParentPosts([postData]),
 			Topics.syncBacklinks(postData),
 			posts.parsePost(postData),
@@ -260,11 +299,23 @@ module.exports = function (Topics) {
 	}
 
 	Topics.checkTitle = function (title) {
-		check(title, meta.config.minimumTitleLength, meta.config.maximumTitleLength, 'title-too-short', 'title-too-long');
+		check(
+			title,
+			meta.config.minimumTitleLength,
+			meta.config.maximumTitleLength,
+			'title-too-short',
+			'title-too-long'
+		);
 	};
 
 	Topics.checkContent = function (content) {
-		check(content, meta.config.minimumPostLength, meta.config.maximumPostLength, 'content-too-short', 'content-too-long');
+		check(
+			content,
+			meta.config.minimumPostLength,
+			meta.config.maximumPostLength,
+			'content-too-short',
+			'content-too-long'
+		);
 	};
 
 	function check(item, min, max, minError, maxError) {
@@ -273,7 +324,11 @@ module.exports = function (Topics) {
 			item = utils.stripHTMLTags(item).trim();
 		}
 
-		if (item === null || item === undefined || item.length < parseInt(min, 10)) {
+		if (
+			item === null ||
+			item === undefined ||
+			item.length < parseInt(min, 10)
+		) {
 			throw new Error(`[[error:${minError}, ${min}]]`);
 		} else if (item.length > parseInt(max, 10)) {
 			throw new Error(`[[error:${maxError}, ${max}]]`);
@@ -281,7 +336,11 @@ module.exports = function (Topics) {
 	}
 
 	async function guestHandleValid(data) {
-		if (meta.config.allowGuestHandles && parseInt(data.uid, 10) === 0 && data.handle) {
+		if (
+			meta.config.allowGuestHandles &&
+			parseInt(data.uid, 10) === 0 &&
+			data.handle
+		) {
 			if (data.handle.length > meta.config.maximumUsernameLength) {
 				throw new Error('[[error:guest-handle-invalid]]');
 			}

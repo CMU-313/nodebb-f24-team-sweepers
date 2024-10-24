@@ -57,7 +57,7 @@ User.resetLockouts = async function (socket, uids) {
 	if (!Array.isArray(uids)) {
 		throw new Error('[[error:invalid-data]]');
 	}
-	await Promise.all(uids.map(uid => user.auth.resetLockout(uid)));
+	await Promise.all(uids.map((uid) => user.auth.resetLockout(uid)));
 };
 
 User.validateEmail = async function (socket, uids) {
@@ -83,21 +83,27 @@ User.sendValidationEmail = async function (socket, uids) {
 	let errorLogged = false;
 	await async.eachLimit(uids, 50, async (uid) => {
 		const email = await user.email.getEmailForValidation(uid);
-		await user.email.sendValidationEmail(uid, {
-			force: true,
-			email: email,
-		}).catch((err) => {
-			if (!errorLogged) {
-				winston.error(`[user.create] Validation email failed to send\n[emailer.send] ${err.stack}`);
-				errorLogged = true;
-			}
+		await user.email
+			.sendValidationEmail(uid, {
+				force: true,
+				email: email,
+			})
+			.catch((err) => {
+				if (!errorLogged) {
+					winston.error(
+						`[user.create] Validation email failed to send\n[emailer.send] ${err.stack}`
+					);
+					errorLogged = true;
+				}
 
-			failed.push(uid);
-		});
+				failed.push(uid);
+			});
 	});
 
 	if (failed.length) {
-		throw Error(`Email sending failed for the following uids, check server logs for more info: ${failed.join(',')}`);
+		throw Error(
+			`Email sending failed for the following uids, check server logs for more info: ${failed.join(',')}`
+		);
 	}
 };
 
@@ -106,15 +112,19 @@ User.sendPasswordResetEmail = async function (socket, uids) {
 		throw new Error('[[error:invalid-data]]');
 	}
 
-	uids = uids.filter(uid => parseInt(uid, 10));
+	uids = uids.filter((uid) => parseInt(uid, 10));
 
-	await Promise.all(uids.map(async (uid) => {
-		const userData = await user.getUserFields(uid, ['email', 'username']);
-		if (!userData.email) {
-			throw new Error(`[[error:user-doesnt-have-email, ${userData.username}]]`);
-		}
-		await user.reset.send(userData.email);
-	}));
+	await Promise.all(
+		uids.map(async (uid) => {
+			const userData = await user.getUserFields(uid, ['email', 'username']);
+			if (!userData.email) {
+				throw new Error(
+					`[[error:user-doesnt-have-email, ${userData.username}]]`
+				);
+			}
+			await user.reset.send(userData.email);
+		})
+	);
 };
 
 User.forcePasswordReset = async function (socket, uids) {
@@ -122,11 +132,15 @@ User.forcePasswordReset = async function (socket, uids) {
 		throw new Error('[[error:invalid-data]]');
 	}
 
-	uids = uids.filter(uid => parseInt(uid, 10));
+	uids = uids.filter((uid) => parseInt(uid, 10));
 
-	await db.setObjectField(uids.map(uid => `user:${uid}`), 'passwordExpiry', Date.now());
+	await db.setObjectField(
+		uids.map((uid) => `user:${uid}`),
+		'passwordExpiry',
+		Date.now()
+	);
 	await user.auth.revokeAllSessions(uids);
-	uids.forEach(uid => sockets.in(`uid_${uid}`).emit('event:logout'));
+	uids.forEach((uid) => sockets.in(`uid_${uid}`).emit('event:logout'));
 };
 
 User.restartJobs = async function () {
@@ -139,7 +153,9 @@ User.loadGroups = async function (socket, uids) {
 		groups.getUserGroupsFromSet('groups:createtime', uids),
 	]);
 	userData.forEach((data, index) => {
-		data.groups = groupData[index].filter(group => !groups.isPrivilegeGroup(group.name));
+		data.groups = groupData[index].filter(
+			(group) => !groups.isPrivilegeGroup(group.name)
+		);
 		data.groups.forEach((group) => {
 			group.nameEscaped = translator.escape(group.displayName);
 		});
@@ -154,10 +170,13 @@ User.setReputation = async function (socket, data) {
 
 	await Promise.all([
 		db.setObjectBulk(
-			data.uids.map(uid => ([`user:${uid}`, { reputation: parseInt(data.value, 10) }]))
+			data.uids.map((uid) => [
+				`user:${uid}`,
+				{ reputation: parseInt(data.value, 10) },
+			])
 		),
 		db.sortedSetAddBulk(
-			data.uids.map(uid => (['users:reputation', data.value, uid]))
+			data.uids.map((uid) => ['users:reputation', data.value, uid])
 		),
 	]);
 };

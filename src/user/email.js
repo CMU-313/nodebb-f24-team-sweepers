@@ -1,4 +1,3 @@
-
 'use strict';
 
 const nconf = require('nconf');
@@ -54,7 +53,11 @@ UserEmail.getEmailForValidation = async (uid) => {
 	// check email from confirmObj
 	const code = await db.get(`confirm:byUid:${uid}`);
 	const confirmObj = await db.getObject(`confirm:${code}`);
-	if (confirmObj && confirmObj.email && parseInt(uid, 10) === parseInt(confirmObj.uid, 10)) {
+	if (
+		confirmObj &&
+		confirmObj.email &&
+		parseInt(uid, 10) === parseInt(confirmObj.uid, 10)
+	) {
 		email = confirmObj.email;
 	}
 
@@ -67,9 +70,11 @@ UserEmail.getEmailForValidation = async (uid) => {
 UserEmail.isValidationPending = async (uid, email) => {
 	const code = await db.get(`confirm:byUid:${uid}`);
 	const confirmObj = await db.getObject(`confirm:${code}`);
-	return !!(confirmObj && (
-		(!email || email === confirmObj.email) && Date.now() < parseInt(confirmObj.expires, 10)
-	));
+	return !!(
+		confirmObj &&
+		(!email || email === confirmObj.email) &&
+		Date.now() < parseInt(confirmObj.expires, 10)
+	);
 };
 
 UserEmail.getValidationExpiry = async (uid) => {
@@ -109,7 +114,9 @@ UserEmail.sendValidationEmail = async function (uid, options) {
 	 */
 
 	if (meta.config.sendValidationEmail !== 1) {
-		winston.verbose(`[user/email] Validation email for uid ${uid} not sent due to config settings`);
+		winston.verbose(
+			`[user/email] Validation email for uid ${uid} not sent due to config settings`
+		);
 		return;
 	}
 
@@ -135,8 +142,13 @@ UserEmail.sendValidationEmail = async function (uid, options) {
 		return;
 	}
 
-	if (!options.force && !await UserEmail.canSendValidation(uid, options.email)) {
-		throw new Error(`[[error:confirm-email-already-sent, ${emailConfirmInterval}]]`);
+	if (
+		!options.force &&
+		!(await UserEmail.canSendValidation(uid, options.email))
+	) {
+		throw new Error(
+			`[[error:confirm-email-already-sent, ${emailConfirmInterval}]]`
+		);
 	}
 
 	const username = await user.getUserField(uid, 'username');
@@ -144,7 +156,10 @@ UserEmail.sendValidationEmail = async function (uid, options) {
 		uid,
 		username,
 		confirm_link,
-		confirm_code: await plugins.hooks.fire('filter:user.verify.code', confirm_code),
+		confirm_code: await plugins.hooks.fire(
+			'filter:user.verify.code',
+			confirm_code
+		),
 		email: options.email,
 
 		subject: options.subject || '[[email:email.verify-your-email.subject]]',
@@ -157,10 +172,12 @@ UserEmail.sendValidationEmail = async function (uid, options) {
 	await db.setObject(`confirm:${confirm_code}`, {
 		email: options.email.toLowerCase(),
 		uid: uid,
-		expires: Date.now() + (emailConfirmExpiry * 60 * 60 * 1000),
+		expires: Date.now() + emailConfirmExpiry * 60 * 60 * 1000,
 	});
 
-	winston.verbose(`[user/email] Validation email for uid ${uid} sent to ${options.email}`);
+	winston.verbose(
+		`[user/email] Validation email for uid ${uid} sent to ${options.email}`
+	);
 	events.log({
 		type: 'email-confirmation-sent',
 		uid,
@@ -188,7 +205,10 @@ UserEmail.confirmByCode = async function (code, sessionId) {
 	}
 
 	// If another uid has the same email, remove it
-	const oldUid = await db.sortedSetScore('email:uid', confirmObj.email.toLowerCase());
+	const oldUid = await db.sortedSetScore(
+		'email:uid',
+		confirmObj.email.toLowerCase()
+	);
 	if (oldUid) {
 		await UserEmail.remove(oldUid, sessionId);
 	}
@@ -225,24 +245,40 @@ UserEmail.confirmByUid = async function (uid, callerUid = 0) {
 	}
 
 	// If another uid has the same email throw error
-	const oldUid = await db.sortedSetScore('email:uid', currentEmail.toLowerCase());
+	const oldUid = await db.sortedSetScore(
+		'email:uid',
+		currentEmail.toLowerCase()
+	);
 	if (oldUid && oldUid !== parseInt(uid, 10)) {
 		throw new Error('[[error:email-taken]]');
 	}
 
-	const confirmedEmails = await db.getSortedSetRangeByScore(`email:uid`, 0, -1, uid, uid);
+	const confirmedEmails = await db.getSortedSetRangeByScore(
+		`email:uid`,
+		0,
+		-1,
+		uid,
+		uid
+	);
 	if (confirmedEmails.length) {
 		// remove old email of user by uid
 		await db.sortedSetsRemoveRangeByScore([`email:uid`], uid, uid);
 		await db.sortedSetRemoveBulk(
-			confirmedEmails.map(email => [`email:sorted`, `${email.toLowerCase()}:${uid}`])
+			confirmedEmails.map((email) => [
+				`email:sorted`,
+				`${email.toLowerCase()}:${uid}`,
+			])
 		);
 	}
 	await Promise.all([
 		db.sortedSetAddBulk([
 			['email:uid', uid, currentEmail.toLowerCase()],
 			['email:sorted', 0, `${currentEmail.toLowerCase()}:${uid}`],
-			[`user:${uid}:emails`, Date.now(), `${currentEmail}:${Date.now()}:${callerUid}`],
+			[
+				`user:${uid}:emails`,
+				Date.now(),
+				`${currentEmail}:${Date.now()}:${callerUid}`,
+			],
 		]),
 		user.setUserField(uid, 'email:confirmed', 1),
 		groups.join('verified-users', uid),
@@ -250,5 +286,8 @@ UserEmail.confirmByUid = async function (uid, callerUid = 0) {
 		user.email.expireValidation(uid),
 		user.reset.cleanByUid(uid),
 	]);
-	await plugins.hooks.fire('action:user.email.confirmed', { uid: uid, email: currentEmail });
+	await plugins.hooks.fire('action:user.email.confirmed', {
+		uid: uid,
+		email: currentEmail,
+	});
 };
