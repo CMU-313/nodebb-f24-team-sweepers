@@ -39,14 +39,18 @@ groupsController.get = async function (req, res, next) {
 	}
 	const [groupNames, group] = await Promise.all([
 		getGroupNames(),
-		groups.get(groupName, { uid: req.uid, truncateUserList: true, userListCount: 20 }),
+		groups.get(groupName, {
+			uid: req.uid,
+			truncateUserList: true,
+			userListCount: 20,
+		}),
 	]);
 
 	if (!group || groupName === groups.BANNED_USERS) {
 		return next();
 	}
 
-	const groupNameData = groupNames.map(name => ({
+	const groupNameData = groupNames.map((name) => ({
 		encodedName: encodeURIComponent(name),
 		displayName: validator.escape(String(name)),
 		selected: name === groupName,
@@ -63,18 +67,24 @@ groupsController.get = async function (req, res, next) {
 
 async function getGroupNames() {
 	const groupNames = Object.values(await db.getObject('groupslug:groupname'));
-	return groupNames.filter(name => (
-		name !== 'registered-users' &&
-		name !== 'verified-users' &&
-		name !== 'unverified-users' &&
-		name !== groups.BANNED_USERS
-	)).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+	return groupNames
+		.filter(
+			(name) =>
+				name !== 'registered-users' &&
+				name !== 'verified-users' &&
+				name !== 'unverified-users' &&
+				name !== groups.BANNED_USERS
+		)
+		.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 }
 
 groupsController.getCSV = async function (req, res) {
 	const { referer } = req.headers;
 
-	if (!referer || !referer.replace(nconf.get('url'), '').startsWith('/admin/manage/groups')) {
+	if (
+		!referer ||
+		!referer.replace(nconf.get('url'), '').startsWith('/admin/manage/groups')
+	) {
 		return res.status(403).send('[[error:invalid-origin]]');
 	}
 	await events.log({

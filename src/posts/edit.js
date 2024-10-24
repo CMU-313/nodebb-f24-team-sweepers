@@ -30,7 +30,13 @@ module.exports = function (Posts) {
 		}
 
 		const topicData = await topics.getTopicFields(postData.tid, [
-			'cid', 'mainPid', 'title', 'timestamp', 'scheduled', 'slug', 'tags',
+			'cid',
+			'mainPid',
+			'title',
+			'timestamp',
+			'scheduled',
+			'slug',
+			'tags',
 		]);
 
 		await scheduledTopicCheck(data, topicData);
@@ -55,9 +61,8 @@ module.exports = function (Posts) {
 		]);
 
 		await Posts.setPostFields(data.pid, result.post);
-		const contentChanged = data.content !== oldContent ||
-			topic.renamed ||
-			topic.tagsupdated;
+		const contentChanged =
+			data.content !== oldContent || topic.renamed || topic.tagsupdated;
 
 		if (meta.config.enablePostHistory === 1 && contentChanged) {
 			await Posts.diffs.save({
@@ -84,12 +89,20 @@ module.exports = function (Posts) {
 
 		await topics.notifyFollowers(returnPostData, data.uid, {
 			type: 'post-edit',
-			bodyShort: translator.compile('notifications:user-edited-post', editor.username, topic.title),
+			bodyShort: translator.compile(
+				'notifications:user-edited-post',
+				editor.username,
+				topic.title
+			),
 			nid: `edit_post:${data.pid}:uid:${data.uid}`,
 		});
 		await topics.syncBacklinks(returnPostData);
 
-		plugins.hooks.fire('action:post.edit', { post: _.clone(returnPostData), data: data, uid: data.uid });
+		plugins.hooks.fire('action:post.edit', {
+			post: _.clone(returnPostData),
+			data: data,
+			uid: data.uid,
+		});
 
 		require('./cache').del(String(postData.pid));
 		pubsub.publish('post:edit', String(postData.pid));
@@ -124,18 +137,28 @@ module.exports = function (Posts) {
 			cid: topicData.cid,
 			uid: postData.uid,
 			mainPid: data.pid,
-			timestamp: rescheduling(data, topicData) ? data.timestamp : topicData.timestamp,
+			timestamp: rescheduling(data, topicData)
+				? data.timestamp
+				: topicData.timestamp,
 		};
 		if (title) {
 			newTopicData.title = title;
 			newTopicData.slug = `${tid}/${slugify(title) || 'topic'}`;
 		}
 
-		const tagsupdated = Array.isArray(data.tags) &&
-			!_.isEqual(data.tags, topicData.tags.map(tag => tag.value));
+		const tagsupdated =
+			Array.isArray(data.tags) &&
+			!_.isEqual(
+				data.tags,
+				topicData.tags.map((tag) => tag.value)
+			);
 
 		if (tagsupdated) {
-			const canTag = await privileges.categories.can('topics:tag', topicData.cid, data.uid);
+			const canTag = await privileges.categories.can(
+				'topics:tag',
+				topicData.cid,
+				data.uid
+			);
 			if (!canTag) {
 				throw new Error('[[error:no-privileges]]');
 			}
@@ -159,8 +182,13 @@ module.exports = function (Posts) {
 
 		newTopicData.tags = data.tags;
 		newTopicData.oldTitle = topicData.title;
-		const renamed = title && translator.escape(validator.escape(String(title))) !== topicData.title;
-		plugins.hooks.fire('action:topic.edit', { topic: newTopicData, uid: data.uid });
+		const renamed =
+			title &&
+			translator.escape(validator.escape(String(title))) !== topicData.title;
+		plugins.hooks.fire('action:topic.edit', {
+			topic: newTopicData,
+			uid: data.uid,
+		});
 		return {
 			tid: tid,
 			cid: newTopicData.cid,
@@ -181,7 +209,11 @@ module.exports = function (Posts) {
 		if (!topicData.scheduled) {
 			return;
 		}
-		const canSchedule = await privileges.categories.can('topics:schedule', topicData.cid, data.uid);
+		const canSchedule = await privileges.categories.can(
+			'topics:schedule',
+			topicData.cid,
+			data.uid
+		);
 		if (!canSchedule) {
 			throw new Error('[[error:no-privileges]]');
 		}
@@ -198,7 +230,9 @@ module.exports = function (Posts) {
 		};
 
 		// For posts in scheduled topics, if edited before, use edit timestamp
-		editPostData.edited = topicData.scheduled ? (postData.edited || postData.timestamp) + 1 : Date.now();
+		editPostData.edited = topicData.scheduled
+			? (postData.edited || postData.timestamp) + 1
+			: Date.now();
 
 		// if rescheduling the main post
 		if (rescheduling(data, topicData)) {
@@ -212,6 +246,8 @@ module.exports = function (Posts) {
 
 	function rescheduling(data, topicData) {
 		const isMain = parseInt(data.pid, 10) === parseInt(topicData.mainPid, 10);
-		return isMain && topicData.scheduled && topicData.timestamp !== data.timestamp;
+		return (
+			isMain && topicData.scheduled && topicData.timestamp !== data.timestamp
+		);
 	}
 };

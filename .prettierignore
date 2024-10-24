@@ -1,0 +1,43 @@
+# Node.js modules and generated files
+node_modules
+build
+coverage
+logs
+install
+
+# Docker and related environment files
+.docker
+.dockerignore
+Dockerfile
+docker-compose.yml
+docker-compose-pgsql.yml
+docker-compose-redis.yml
+dev.Dockerfile
+
+# Public directory and static files
+public
+
+# Version control related files
+.git
+.gitignore
+.gitmodules
+.github
+.gitattributes
+.husky
+.nyc_output
+.tx
+
+# ESLint and other config files that should not be formatted
+.eslintignore
+.eslintrc
+.eslintcache
+.mocharc.yml
+.editorconfig
+
+# Files related to Prettier itself (you don't want Prettier to reformat its own config files)
+.prettierignore
+.prettierrc
+
+# Additional config files
+.codeclimate.yml
+Gruntfile.js

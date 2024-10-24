@@ -21,7 +21,9 @@ eventsController.get = async function (req, res) {
 	}
 
 	// Limit by date
-	let from = req.query.start ? new Date(req.query.start) || undefined : undefined;
+	let from = req.query.start
+		? new Date(req.query.start) || undefined
+		: undefined;
 	let to = req.query.end ? new Date(req.query.end) || undefined : new Date();
 	from = from && from.setUTCHours(0, 0, 0, 0); // setHours returns a unix timestamp (Number, not Date)
 	to = to && to.setUTCHours(23, 59, 59, 999); // setHours returns a unix timestamp (Number, not Date)
@@ -42,7 +44,11 @@ eventsController.get = async function (req, res) {
 			from: from || '-inf',
 			to,
 		}),
-		db.sortedSetsCard([''].concat(events.types).map(type => `events:time${type ? `:${type}` : ''}`)),
+		db.sortedSetsCard(
+			['']
+				.concat(events.types)
+				.map((type) => `events:time${type ? `:${type}` : ''}`)
+		),
 	]);
 
 	const types = [''].concat(events.types).map((type, index) => ({

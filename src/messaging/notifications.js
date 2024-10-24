@@ -13,9 +13,16 @@ module.exports = function (Messaging) {
 	Messaging.setUserNotificationSetting = async (uid, roomId, value) => {
 		if (parseInt(value, 10) === -1) {
 			// go back to default
-			return await db.deleteObjectField(`chat:room:${roomId}:notification:settings`, uid);
+			return await db.deleteObjectField(
+				`chat:room:${roomId}:notification:settings`,
+				uid
+			);
 		}
-		await db.setObjectField(`chat:room:${roomId}:notification:settings`, uid, parseInt(value, 10));
+		await db.setObjectField(
+			`chat:room:${roomId}:notification:settings`,
+			uid,
+			parseInt(value, 10)
+		);
 	};
 
 	Messaging.getUidsNotificationSetting = async (uids, roomId) => {
@@ -23,7 +30,9 @@ module.exports = function (Messaging) {
 			db.getObjectFields(`chat:room:${roomId}:notification:settings`, uids),
 			Messaging.getRoomData(roomId, ['notificationSetting']),
 		]);
-		return uids.map(uid => parseInt(settings[uid] || roomData.notificationSetting, 10));
+		return uids.map((uid) =>
+			parseInt(settings[uid] || roomData.notificationSetting, 10)
+		);
 	};
 
 	Messaging.markRoomNotificationsRead = async (uid, roomId) => {
@@ -38,7 +47,9 @@ module.exports = function (Messaging) {
 	};
 
 	Messaging.notifyUsersInRoom = async (fromUid, roomId, messageObj) => {
-		const isPublic = parseInt(await db.getObjectField(`chat:room:${roomId}`, 'public'), 10) === 1;
+		const isPublic =
+			parseInt(await db.getObjectField(`chat:room:${roomId}`, 'public'), 10) ===
+			1;
 
 		let data = {
 			roomId: roomId,
@@ -57,7 +68,10 @@ module.exports = function (Messaging) {
 		const unreadData = { roomId, fromUid, public: isPublic };
 		if (isPublic && !messageObj.system) {
 			// delivers unread public msg to all online users on the chats page
-			io.in(`chat_room_public_${roomId}`).emit('event:chats.public.unread', unreadData);
+			io.in(`chat_room_public_${roomId}`).emit(
+				'event:chats.public.unread',
+				unreadData
+			);
 		}
 		if (messageObj.system) {
 			return;
@@ -65,14 +79,18 @@ module.exports = function (Messaging) {
 
 		// push unread count only for private rooms
 		if (!isPublic) {
-			const uids = await Messaging.getAllUidsInRoomFromSet(`chat:room:${roomId}:uids:online`);
+			const uids = await Messaging.getAllUidsInRoomFromSet(
+				`chat:room:${roomId}:uids:online`
+			);
 			Messaging.pushUnreadCount(uids, unreadData);
 		}
 
 		try {
 			await sendNotification(fromUid, roomId, messageObj);
 		} catch (err) {
-			winston.error(`[messaging/notifications] Unabled to send notification\n${err.stack}`);
+			winston.error(
+				`[messaging/notifications] Unabled to send notification\n${err.stack}`
+			);
 		}
 	};
 
@@ -87,30 +105,40 @@ module.exports = function (Messaging) {
 		const roomDefault = roomData.notificationSetting;
 		const uidsToNotify = [];
 		const { ALLMESSAGES } = Messaging.notificationSettings;
-		await batch.processSortedSet(`chat:room:${roomId}:uids:online`, async (uids) => {
-			uids = uids.filter(
-				uid => (parseInt((settings && settings[uid]) || roomDefault, 10) === ALLMESSAGES) &&
-					fromUid !== parseInt(uid, 10) &&
-					!realtimeUids.includes(parseInt(uid, 10))
-			);
-			const hasRead = await Messaging.hasRead(uids, roomId);
-			uidsToNotify.push(...uids.filter((uid, index) => !hasRead[index]));
-		}, {
-			reverse: true,
-			batch: 500,
-			interval: 100,
-		});
+		await batch.processSortedSet(
+			`chat:room:${roomId}:uids:online`,
+			async (uids) => {
+				uids = uids.filter(
+					(uid) =>
+						parseInt((settings && settings[uid]) || roomDefault, 10) ===
+							ALLMESSAGES &&
+						fromUid !== parseInt(uid, 10) &&
+						!realtimeUids.includes(parseInt(uid, 10))
+				);
+				const hasRead = await Messaging.hasRead(uids, roomId);
+				uidsToNotify.push(...uids.filter((uid, index) => !hasRead[index]));
+			},
+			{
+				reverse: true,
+				batch: 500,
+				interval: 100,
+			}
+		);
 
 		if (uidsToNotify.length) {
 			const { displayname } = messageObj.fromUser;
 			const isGroupChat = await Messaging.isGroupChat(roomId);
-			const roomName = roomData.roomName || `[[modules:chat.room-id, ${roomId}]]`;
+			const roomName =
+				roomData.roomName || `[[modules:chat.room-id, ${roomId}]]`;
 			const notifData = {
 				type: isGroupChat ? 'new-group-chat' : 'new-chat',
-				subject: roomData.roomName ?
-					`[[email:notif.chat.new-message-from-user-in-room, ${displayname}, ${roomName}]]` :
-					`[[email:notif.chat.new-message-from-user, ${displayname}]]`,
-				bodyShort: isGroupChat || roomData.roomName ? `[[notifications:new-message-in, ${roomName}]]` : `[[notifications:new-message-from, ${displayname}]]`,
+				subject: roomData.roomName
+					? `[[email:notif.chat.new-message-from-user-in-room, ${displayname}, ${roomName}]]`
+					: `[[email:notif.chat.new-message-from-user, ${displayname}]]`,
+				bodyShort:
+					isGroupChat || roomData.roomName
+						? `[[notifications:new-message-in, ${roomName}]]`
+						: `[[notifications:new-message-from, ${displayname}]]`,
 				bodyLong: messageObj.content,
 				nid: `chat_${roomId}_${fromUid}_${Date.now()}`,
 				mergeId: `new-chat|${roomId}`, // as roomId is the differentiator, no distinction between direct vs. group req'd.

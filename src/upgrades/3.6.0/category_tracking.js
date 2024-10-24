@@ -17,16 +17,25 @@ module.exports = {
 			await db.setObjectField('config', 'categoryWatchState', 'tracking');
 		}
 
-		await batch.processSortedSet(`users:joindate`, async (uids) => {
-			const userSettings = await user.getMultipleUserSettings(uids);
-			const change = userSettings.filter(s => s && s.categoryWatchState === 'watching');
-			await db.setObjectBulk(
-				change.map(s => [`user:${s.uid}:settings`, { categoryWatchState: 'tracking' }])
-			);
-			progress.incr(uids.length);
-		}, {
-			batch: 500,
-			progress,
-		});
+		await batch.processSortedSet(
+			`users:joindate`,
+			async (uids) => {
+				const userSettings = await user.getMultipleUserSettings(uids);
+				const change = userSettings.filter(
+					(s) => s && s.categoryWatchState === 'watching'
+				);
+				await db.setObjectBulk(
+					change.map((s) => [
+						`user:${s.uid}:settings`,
+						{ categoryWatchState: 'tracking' },
+					])
+				);
+				progress.incr(uids.length);
+			},
+			{
+				batch: 500,
+				progress,
+			}
+		);
 	},
 };

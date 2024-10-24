@@ -19,7 +19,13 @@ module.exports = function (SocketPosts) {
 		}
 		const cid = await posts.getCidByPid(data.pid);
 		const results = await utils.promiseParallel({
-			posts: posts.getPostFields(data.pid, ['deleted', 'bookmarks', 'uid', 'ip', 'flagId']),
+			posts: posts.getPostFields(data.pid, [
+				'deleted',
+				'bookmarks',
+				'uid',
+				'ip',
+				'flagId',
+			]),
 			isAdmin: user.isAdministrator(socket.uid),
 			isGlobalMod: user.isGlobalModerator(socket.uid),
 			isModerator: user.isModerator(socket.uid, cid),
@@ -27,7 +33,11 @@ module.exports = function (SocketPosts) {
 			canDelete: privileges.posts.canDelete(data.pid, socket.uid),
 			canPurge: privileges.posts.canPurge(data.pid, socket.uid),
 			canFlag: privileges.posts.canFlag(data.pid, socket.uid),
-			canViewHistory: privileges.posts.can('posts:history', data.pid, socket.uid),
+			canViewHistory: privileges.posts.can(
+				'posts:history',
+				data.pid,
+				socket.uid
+			),
 			flagged: flags.exists('post', data.pid, socket.uid), // specifically, whether THIS calling user flagged
 			bookmarked: posts.hasBookmarked(data.pid, socket.uid),
 			postSharing: social.getActivePostSharing(),
@@ -43,10 +53,13 @@ module.exports = function (SocketPosts) {
 		postData.display_delete_tools = results.canDelete.flag;
 		postData.display_purge_tools = results.canPurge;
 		postData.display_flag_tools = socket.uid && results.canFlag.flag;
-		postData.display_moderator_tools = postData.display_edit_tools || postData.display_delete_tools;
+		postData.display_moderator_tools =
+			postData.display_edit_tools || postData.display_delete_tools;
 		postData.display_move_tools = results.isAdmin || results.isModerator;
-		postData.display_change_owner_tools = results.isAdmin || results.isModerator;
-		postData.display_ip_ban = (results.isAdmin || results.isGlobalMod) && !postData.selfPost;
+		postData.display_change_owner_tools =
+			results.isAdmin || results.isModerator;
+		postData.display_ip_ban =
+			(results.isAdmin || results.isGlobalMod) && !postData.selfPost;
 		postData.display_history = results.history && results.canViewHistory;
 		postData.flags = {
 			flagId: parseInt(results.posts.flagId, 10) || null,
@@ -80,15 +93,17 @@ module.exports = function (SocketPosts) {
 		}
 
 		const postData = await posts.changeOwner(data.pids, data.toUid);
-		const logs = postData.map(({ pid, uid, cid }) => (events.log({
-			type: 'post-change-owner',
-			uid: socket.uid,
-			ip: socket.ip,
-			targetUid: data.toUid,
-			pid: pid,
-			originalUid: uid,
-			cid: cid,
-		})));
+		const logs = postData.map(({ pid, uid, cid }) =>
+			events.log({
+				type: 'post-change-owner',
+				uid: socket.uid,
+				ip: socket.ip,
+				targetUid: data.toUid,
+				pid: pid,
+				originalUid: uid,
+				cid: cid,
+			})
+		);
 
 		await Promise.all(logs);
 	};

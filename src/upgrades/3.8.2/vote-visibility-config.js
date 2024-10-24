@@ -10,7 +10,11 @@ module.exports = {
 	method: async function () {
 		const current = await db.getObjectField('config', 'votesArePublic');
 		const isPublic = parseInt(current, 10) === 1;
-		await db.setObjectField('config', 'voteVisibility', isPublic ? 'all' : 'privileged');
+		await db.setObjectField(
+			'config',
+			'voteVisibility',
+			isPublic ? 'all' : 'privileged'
+		);
 		await db.deleteObjectField('config', 'votesArePublic');
 	},
 };

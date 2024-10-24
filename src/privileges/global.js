@@ -1,4 +1,3 @@
-
 'use strict';
 
 const _ = require('lodash');
@@ -18,22 +17,70 @@ const privsGlobal = module.exports;
  */
 const _privilegeMap = new Map([
 	['chat', { label: '[[admin/manage/privileges:chat]]', type: 'posting' }],
-	['chat:privileged', { label: '[[admin/manage/privileges:chat-with-privileged]]', type: 'posting' }],
-	['upload:post:image', { label: '[[admin/manage/privileges:upload-images]]', type: 'posting' }],
-	['upload:post:file', { label: '[[admin/manage/privileges:upload-files]]', type: 'posting' }],
-	['signature', { label: '[[admin/manage/privileges:signature]]', type: 'posting' }],
+	[
+		'chat:privileged',
+		{
+			label: '[[admin/manage/privileges:chat-with-privileged]]',
+			type: 'posting',
+		},
+	],
+	[
+		'upload:post:image',
+		{ label: '[[admin/manage/privileges:upload-images]]', type: 'posting' },
+	],
+	[
+		'upload:post:file',
+		{ label: '[[admin/manage/privileges:upload-files]]', type: 'posting' },
+	],
+	[
+		'signature',
+		{ label: '[[admin/manage/privileges:signature]]', type: 'posting' },
+	],
 	['invite', { label: '[[admin/manage/privileges:invite]]', type: 'posting' }],
-	['group:create', { label: '[[admin/manage/privileges:allow-group-creation]]', type: 'posting' }],
-	['search:content', { label: '[[admin/manage/privileges:search-content]]', type: 'viewing' }],
-	['search:users', { label: '[[admin/manage/privileges:search-users]]', type: 'viewing' }],
-	['search:tags', { label: '[[admin/manage/privileges:search-tags]]', type: 'viewing' }],
-	['view:users', { label: '[[admin/manage/privileges:view-users]]', type: 'viewing' }],
-	['view:tags', { label: '[[admin/manage/privileges:view-tags]]', type: 'viewing' }],
-	['view:groups', { label: '[[admin/manage/privileges:view-groups]]', type: 'viewing' }],
-	['local:login', { label: '[[admin/manage/privileges:allow-local-login]]', type: 'viewing' }],
+	[
+		'group:create',
+		{
+			label: '[[admin/manage/privileges:allow-group-creation]]',
+			type: 'posting',
+		},
+	],
+	[
+		'search:content',
+		{ label: '[[admin/manage/privileges:search-content]]', type: 'viewing' },
+	],
+	[
+		'search:users',
+		{ label: '[[admin/manage/privileges:search-users]]', type: 'viewing' },
+	],
+	[
+		'search:tags',
+		{ label: '[[admin/manage/privileges:search-tags]]', type: 'viewing' },
+	],
+	[
+		'view:users',
+		{ label: '[[admin/manage/privileges:view-users]]', type: 'viewing' },
+	],
+	[
+		'view:tags',
+		{ label: '[[admin/manage/privileges:view-tags]]', type: 'viewing' },
+	],
+	[
+		'view:groups',
+		{ label: '[[admin/manage/privileges:view-groups]]', type: 'viewing' },
+	],
+	[
+		'local:login',
+		{ label: '[[admin/manage/privileges:allow-local-login]]', type: 'viewing' },
+	],
 	['ban', { label: '[[admin/manage/privileges:ban]]', type: 'moderation' }],
 	['mute', { label: '[[admin/manage/privileges:mute]]', type: 'moderation' }],
-	['view:users:info', { label: '[[admin/manage/privileges:view-users-info]]', type: 'moderation' }],
+	[
+		'view:users:info',
+		{
+			label: '[[admin/manage/privileges:view-users-info]]',
+			type: 'moderation',
+		},
+	],
 ]);
 
 privsGlobal.init = async () => {
@@ -54,8 +101,16 @@ privsGlobal.getType = function (privilege) {
 	return priv && priv.type ? priv.type : '';
 };
 
-privsGlobal.getUserPrivilegeList = async () => await plugins.hooks.fire('filter:privileges.global.list', Array.from(_privilegeMap.keys()));
-privsGlobal.getGroupPrivilegeList = async () => await plugins.hooks.fire('filter:privileges.global.groups.list', Array.from(_privilegeMap.keys()).map(privilege => `groups:${privilege}`));
+privsGlobal.getUserPrivilegeList = async () =>
+	await plugins.hooks.fire(
+		'filter:privileges.global.list',
+		Array.from(_privilegeMap.keys())
+	);
+privsGlobal.getGroupPrivilegeList = async () =>
+	await plugins.hooks.fire(
+		'filter:privileges.global.groups.list',
+		Array.from(_privilegeMap.keys()).map((privilege) => `groups:${privilege}`)
+	);
 privsGlobal.getPrivilegeList = async () => {
 	const [user, group] = await Promise.all([
 		privsGlobal.getUserPrivilegeList(),
@@ -66,10 +121,16 @@ privsGlobal.getPrivilegeList = async () => {
 
 privsGlobal.list = async function () {
 	async function getLabels() {
-		const labels = Array.from(_privilegeMap.values()).map(data => data.label);
+		const labels = Array.from(_privilegeMap.values()).map((data) => data.label);
 		return await utils.promiseParallel({
-			users: plugins.hooks.fire('filter:privileges.global.list_human', labels.slice()),
-			groups: plugins.hooks.fire('filter:privileges.global.groups.list_human', labels.slice()),
+			users: plugins.hooks.fire(
+				'filter:privileges.global.list_human',
+				labels.slice()
+			),
+			groups: plugins.hooks.fire(
+				'filter:privileges.global.groups.list_human',
+				labels.slice()
+			),
 		});
 	}
 
@@ -99,7 +160,7 @@ privsGlobal.get = async function (uid) {
 		user.isAdministrator(uid),
 	]);
 
-	const combined = userPrivileges.map(allowed => allowed || isAdministrator);
+	const combined = userPrivileges.map((allowed) => allowed || isAdministrator);
 	const privData = _.zipObject(userPrivilegeList, combined);
 
 	return await plugins.hooks.fire('filter:privileges.global.get', privData);
@@ -111,13 +172,16 @@ privsGlobal.can = async function (privilege, uid) {
 		user.isAdministrator(uid),
 		helpers.isAllowedTo(isArray ? privilege : [privilege], uid, 0),
 	]);
-	return isArray ?
-		isUserAllowedTo.map(allowed => isAdministrator || allowed) :
-		isAdministrator || isUserAllowedTo[0];
+	return isArray
+		? isUserAllowedTo.map((allowed) => isAdministrator || allowed)
+		: isAdministrator || isUserAllowedTo[0];
 };
 
 privsGlobal.canGroup = async function (privilege, groupName) {
-	return await groups.isMember(groupName, `cid:0:privileges:groups:${privilege}`);
+	return await groups.isMember(
+		groupName,
+		`cid:0:privileges:groups:${privilege}`
+	);
 };
 
 privsGlobal.filterUids = async function (privilege, uids) {

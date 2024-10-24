@@ -24,15 +24,21 @@ module.exports = function (Messaging) {
 			throw new Error('[[error:invalid-chat-message]]');
 		}
 
-		const maximumChatMessageLength = meta.config.maximumChatMessageLength || 1000;
+		const maximumChatMessageLength =
+			meta.config.maximumChatMessageLength || 1000;
 		content = String(content).trim();
 		let { length } = content;
-		({ content, length } = await plugins.hooks.fire('filter:messaging.checkContent', { content, length }));
+		({ content, length } = await plugins.hooks.fire(
+			'filter:messaging.checkContent',
+			{ content, length }
+		));
 		if (!content) {
 			throw new Error('[[error:invalid-chat-message]]');
 		}
 		if (length > maximumChatMessageLength) {
-			throw new Error(`[[error:chat-message-too-long, ${maximumChatMessageLength}]]`);
+			throw new Error(
+				`[[error:chat-message-too-long, ${maximumChatMessageLength}]]`
+			);
 		}
 	};
 
@@ -46,7 +52,7 @@ module.exports = function (Messaging) {
 			if (!utils.isNumber(data.toMid)) {
 				throw new Error('[[error:invalid-mid]]');
 			}
-			if (!await Messaging.canViewMessage(data.toMid, roomId, uid)) {
+			if (!(await Messaging.canViewMessage(data.toMid, roomId, uid))) {
 				throw new Error('[[error:no-privileges]]');
 			}
 		}
@@ -92,7 +98,10 @@ module.exports = function (Messaging) {
 			uids = await user.blocks.filterUids(uid, uids);
 			tasks.push(
 				Messaging.addRoomToUsers(roomId, uids, timestamp),
-				Messaging.markUnread(uids.filter(uid => uid !== String(data.uid)), roomId),
+				Messaging.markUnread(
+					uids.filter((uid) => uid !== String(data.uid)),
+					roomId
+				)
 			);
 		}
 		await Promise.all(tasks);
@@ -103,7 +112,10 @@ module.exports = function (Messaging) {
 		}
 
 		messages[0].newSet = isNewSet;
-		plugins.hooks.fire('action:messaging.save', { message: message, data: data });
+		plugins.hooks.fire('action:messaging.save', {
+			message: message,
+			data: data,
+		});
 		return messages[0];
 	};
 
@@ -121,7 +133,7 @@ module.exports = function (Messaging) {
 		if (!uids.length) {
 			return;
 		}
-		const keys = _.uniq(uids).map(uid => `uid:${uid}:chat:rooms`);
+		const keys = _.uniq(uids).map((uid) => `uid:${uid}:chat:rooms`);
 		await db.sortedSetsAdd(keys, timestamp, roomId);
 	};
 

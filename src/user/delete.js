@@ -39,17 +39,25 @@ module.exports = function (User) {
 	};
 
 	async function deletePosts(callerUid, uid) {
-		await batch.processSortedSet(`uid:${uid}:posts`, async (pids) => {
-			await posts.purge(pids, callerUid);
-		}, { alwaysStartAt: 0, batch: 500 });
+		await batch.processSortedSet(
+			`uid:${uid}:posts`,
+			async (pids) => {
+				await posts.purge(pids, callerUid);
+			},
+			{ alwaysStartAt: 0, batch: 500 }
+		);
 	}
 
 	async function deleteTopics(callerUid, uid) {
-		await batch.processSortedSet(`uid:${uid}:topics`, async (ids) => {
-			await async.eachSeries(ids, async (tid) => {
-				await topics.purge(tid, callerUid);
-			});
-		}, { alwaysStartAt: 0 });
+		await batch.processSortedSet(
+			`uid:${uid}:topics`,
+			async (ids) => {
+				await async.eachSeries(ids, async (tid) => {
+					await topics.purge(tid, callerUid);
+				});
+			},
+			{ alwaysStartAt: 0 }
+		);
 	}
 
 	async function deleteUploads(callerUid, uid) {
@@ -59,28 +67,37 @@ module.exports = function (User) {
 
 	async function deleteQueued(uid) {
 		let deleteIds = [];
-		await batch.processSortedSet('post:queue', async (ids) => {
-			const data = await db.getObjects(ids.map(id => `post:queue:${id}`));
-			const userQueuedIds = data.filter(d => parseInt(d.uid, 10) === parseInt(uid, 10)).map(d => d.id);
-			deleteIds = deleteIds.concat(userQueuedIds);
-		}, { batch: 500 });
+		await batch.processSortedSet(
+			'post:queue',
+			async (ids) => {
+				const data = await db.getObjects(ids.map((id) => `post:queue:${id}`));
+				const userQueuedIds = data
+					.filter((d) => parseInt(d.uid, 10) === parseInt(uid, 10))
+					.map((d) => d.id);
+				deleteIds = deleteIds.concat(userQueuedIds);
+			},
+			{ batch: 500 }
+		);
 		await async.eachSeries(deleteIds, posts.removeFromQueue);
 	}
 
 	async function removeFromSortedSets(uid) {
-		await db.sortedSetsRemove([
-			'users:joindate',
-			'users:postcount',
-			'users:reputation',
-			'users:banned',
-			'users:banned:expire',
-			'users:flags',
-			'users:online',
-			'digest:day:uids',
-			'digest:week:uids',
-			'digest:biweek:uids',
-			'digest:month:uids',
-		], uid);
+		await db.sortedSetsRemove(
+			[
+				'users:joindate',
+				'users:postcount',
+				'users:reputation',
+				'users:banned',
+				'users:banned:expire',
+				'users:flags',
+				'users:online',
+				'digest:day:uids',
+				'digest:week:uids',
+				'digest:biweek:uids',
+				'digest:month:uids',
+			],
+			uid
+		);
 	}
 
 	User.deleteAccount = async function (uid) {
@@ -97,7 +114,10 @@ module.exports = function (User) {
 			throw new Error('[[error:no-user]]');
 		}
 
-		await plugins.hooks.fire('static:user.delete', { uid: uid, userData: userData });
+		await plugins.hooks.fire('static:user.delete', {
+			uid: uid,
+			userData: userData,
+		});
 		await deleteVotes(uid);
 		await deleteChats(uid);
 		await User.auth.revokeAllSessions(uid);
@@ -112,12 +132,15 @@ module.exports = function (User) {
 			`user:${uid}:settings`,
 			`user:${uid}:usernames`,
 			`user:${uid}:emails`,
-			`uid:${uid}:topics`, `uid:${uid}:posts`,
-			`uid:${uid}:chats`, `uid:${uid}:chats:unread`,
+			`uid:${uid}:topics`,
+			`uid:${uid}:posts`,
+			`uid:${uid}:chats`,
+			`uid:${uid}:chats:unread`,
 			`uid:${uid}:chat:rooms`,
 			`uid:${uid}:chat:rooms:unread`,
 			`uid:${uid}:chat:rooms:read`,
-			`uid:${uid}:upvote`, `uid:${uid}:downvote`,
+			`uid:${uid}:upvote`,
+			`uid:${uid}:downvote`,
 			`uid:${uid}:flag:pids`,
 			`uid:${uid}:sessions`,
 			`invitation:uid:${uid}`,
@@ -131,11 +154,17 @@ module.exports = function (User) {
 		];
 		if (userData.email) {
 			bulkRemove.push(['email:uid', userData.email.toLowerCase()]);
-			bulkRemove.push(['email:sorted', `${userData.email.toLowerCase()}:${uid}`]);
+			bulkRemove.push([
+				'email:sorted',
+				`${userData.email.toLowerCase()}:${uid}`,
+			]);
 		}
 
 		if (userData.fullname) {
-			bulkRemove.push(['fullname:sorted', `${userData.fullname.toLowerCase()}:${uid}`]);
+			bulkRemove.push([
+				'fullname:sorted',
+				`${userData.fullname.toLowerCase()}:${uid}`,
+			]);
 		}
 
 		await Promise.all([
@@ -155,8 +184,11 @@ module.exports = function (User) {
 			User.email.expireValidation(uid),
 		]);
 		await db.deleteAll([
-			`followers:${uid}`, `following:${uid}`, `user:${uid}`,
-			`uid:${uid}:followed_tags`, `uid:${uid}:followed_tids`,
+			`followers:${uid}`,
+			`following:${uid}`,
+			`user:${uid}`,
+			`uid:${uid}:followed_tags`,
+			`uid:${uid}:followed_tids`,
 			`uid:${uid}:ignored_tids`,
 		]);
 		delete deletesInProgress[uid];
@@ -165,17 +197,26 @@ module.exports = function (User) {
 
 	async function deleteUserFromFollowedTopics(uid) {
 		const tids = await db.getSortedSetRange(`uid:${uid}:followed_tids`, 0, -1);
-		await db.setsRemove(tids.map(tid => `tid:${tid}:followers`), uid);
+		await db.setsRemove(
+			tids.map((tid) => `tid:${tid}:followers`),
+			uid
+		);
 	}
 
 	async function deleteUserFromIgnoredTopics(uid) {
 		const tids = await db.getSortedSetRange(`uid:${uid}:ignored_tids`, 0, -1);
-		await db.setsRemove(tids.map(tid => `tid:${tid}:ignorers`), uid);
+		await db.setsRemove(
+			tids.map((tid) => `tid:${tid}:ignorers`),
+			uid
+		);
 	}
 
 	async function deleteUserFromFollowedTags(uid) {
 		const tags = await db.getSortedSetRange(`uid:${uid}:followed_tags`, 0, -1);
-		await db.sortedSetsRemove(tags.map(tag => `tag:${tag}:followers`), uid);
+		await db.sortedSetsRemove(
+			tags.map((tag) => `tag:${tag}:followers`),
+			uid
+		);
 	}
 
 	async function deleteVotes(uid) {
@@ -190,15 +231,20 @@ module.exports = function (User) {
 	}
 
 	async function deleteChats(uid) {
-		const roomIds = await db.getSortedSetRange([
-			`uid:${uid}:chat:rooms`, `chat:rooms:public`,
-		], 0, -1);
+		const roomIds = await db.getSortedSetRange(
+			[`uid:${uid}:chat:rooms`, `chat:rooms:public`],
+			0,
+			-1
+		);
 		await messaging.leaveRooms(uid, roomIds);
 	}
 
 	async function deleteUserIps(uid) {
 		const ips = await db.getSortedSetRange(`uid:${uid}:ip`, 0, -1);
-		await db.sortedSetsRemove(ips.map(ip => `ip:${ip}:uid`), uid);
+		await db.sortedSetsRemove(
+			ips.map((ip) => `ip:${ip}:uid`),
+			uid
+		);
 		await db.delete(`uid:${uid}:ip`);
 	}
 
@@ -209,19 +255,24 @@ module.exports = function (User) {
 		]);
 
 		async function updateCount(uids, name, fieldName) {
-			await batch.processArray(uids, async (uids) => {
-				const counts = await db.sortedSetsCard(uids.map(uid => name + uid));
-				const bulkSet = counts.map(
-					(count, index) => ([`user:${uids[index]}`, { [fieldName]: count || 0 }])
-				);
-				await db.setObjectBulk(bulkSet);
-			}, {
-				batch: 500,
-			});
+			await batch.processArray(
+				uids,
+				async (uids) => {
+					const counts = await db.sortedSetsCard(uids.map((uid) => name + uid));
+					const bulkSet = counts.map((count, index) => [
+						`user:${uids[index]}`,
+						{ [fieldName]: count || 0 },
+					]);
+					await db.setObjectBulk(bulkSet);
+				},
+				{
+					batch: 500,
+				}
+			);
 		}
 
-		const followingSets = followers.map(uid => `following:${uid}`);
-		const followerSets = following.map(uid => `followers:${uid}`);
+		const followingSets = followers.map((uid) => `following:${uid}`);
+		const followerSets = following.map((uid) => `followers:${uid}`);
 
 		await db.sortedSetsRemove(followerSets.concat(followingSets), uid);
 		await Promise.all([

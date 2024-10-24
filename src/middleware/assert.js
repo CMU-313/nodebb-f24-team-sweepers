@@ -24,8 +24,12 @@ const controllerHelpers = require('../controllers/helpers');
 const Assert = module.exports;
 
 Assert.user = helpers.try(async (req, res, next) => {
-	if (!await user.exists(req.params.uid)) {
-		return controllerHelpers.formatApiResponse(404, res, new Error('[[error:no-user]]'));
+	if (!(await user.exists(req.params.uid))) {
+		return controllerHelpers.formatApiResponse(
+			404,
+			res,
+			new Error('[[error:no-user]]')
+		);
 	}
 
 	next();
@@ -33,32 +37,48 @@ Assert.user = helpers.try(async (req, res, next) => {
 
 Assert.group = helpers.try(async (req, res, next) => {
 	const name = await groups.getGroupNameByGroupSlug(req.params.slug);
-	if (!name || !await groups.exists(name)) {
-		return controllerHelpers.formatApiResponse(404, res, new Error('[[error:no-group]]'));
+	if (!name || !(await groups.exists(name))) {
+		return controllerHelpers.formatApiResponse(
+			404,
+			res,
+			new Error('[[error:no-group]]')
+		);
 	}
 
 	next();
 });
 
 Assert.category = helpers.try(async (req, res, next) => {
-	if (!await categories.exists(req.params.cid)) {
-		return controllerHelpers.formatApiResponse(404, res, new Error('[[error:no-category]]'));
+	if (!(await categories.exists(req.params.cid))) {
+		return controllerHelpers.formatApiResponse(
+			404,
+			res,
+			new Error('[[error:no-category]]')
+		);
 	}
 
 	next();
 });
 
 Assert.topic = helpers.try(async (req, res, next) => {
-	if (!await topics.exists(req.params.tid)) {
-		return controllerHelpers.formatApiResponse(404, res, new Error('[[error:no-topic]]'));
+	if (!(await topics.exists(req.params.tid))) {
+		return controllerHelpers.formatApiResponse(
+			404,
+			res,
+			new Error('[[error:no-topic]]')
+		);
 	}
 
 	next();
 });
 
 Assert.post = helpers.try(async (req, res, next) => {
-	if (!await posts.exists(req.params.pid)) {
-		return controllerHelpers.formatApiResponse(404, res, new Error('[[error:no-post]]'));
+	if (!(await posts.exists(req.params.pid))) {
+		return controllerHelpers.formatApiResponse(
+			404,
+			res,
+			new Error('[[error:no-post]]')
+		);
 	}
 
 	next();
@@ -67,7 +87,11 @@ Assert.post = helpers.try(async (req, res, next) => {
 Assert.flag = helpers.try(async (req, res, next) => {
 	const canView = await flags.canView(req.params.flagId, req.uid);
 	if (!canView) {
-		return controllerHelpers.formatApiResponse(404, res, new Error('[[error:no-flag]]'));
+		return controllerHelpers.formatApiResponse(
+			404,
+			res,
+			new Error('[[error:no-flag]]')
+		);
 	}
 
 	next();
@@ -89,11 +113,19 @@ Assert.path = helpers.try(async (req, res, next) => {
 
 	// Guard against path traversal
 	if (!pathToFile.startsWith(nconf.get('upload_path'))) {
-		return controllerHelpers.formatApiResponse(403, res, new Error('[[error:invalid-path]]'));
+		return controllerHelpers.formatApiResponse(
+			403,
+			res,
+			new Error('[[error:invalid-path]]')
+		);
 	}
 
-	if (!await file.exists(pathToFile)) {
-		return controllerHelpers.formatApiResponse(404, res, new Error('[[error:invalid-path]]'));
+	if (!(await file.exists(pathToFile))) {
+		return controllerHelpers.formatApiResponse(
+			404,
+			res,
+			new Error('[[error:invalid-path]]')
+		);
 	}
 
 	next();
@@ -105,10 +137,18 @@ Assert.folderName = helpers.try(async (req, res, next) => {
 
 	// slugify removes invalid characters, folderName may become empty
 	if (!folderName) {
-		return controllerHelpers.formatApiResponse(403, res, new Error('[[error:invalid-path]]'));
+		return controllerHelpers.formatApiResponse(
+			403,
+			res,
+			new Error('[[error:invalid-path]]')
+		);
 	}
 	if (await file.exists(folderPath)) {
-		return controllerHelpers.formatApiResponse(403, res, new Error('[[error:folder-exists]]'));
+		return controllerHelpers.formatApiResponse(
+			403,
+			res,
+			new Error('[[error:folder-exists]]')
+		);
 	}
 
 	res.locals.folderPath = folderPath;
@@ -118,7 +158,11 @@ Assert.folderName = helpers.try(async (req, res, next) => {
 
 Assert.room = helpers.try(async (req, res, next) => {
 	if (!isFinite(req.params.roomId)) {
-		return controllerHelpers.formatApiResponse(400, res, new Error('[[error:invalid-data]]'));
+		return controllerHelpers.formatApiResponse(
+			400,
+			res,
+			new Error('[[error:invalid-data]]')
+		);
 	}
 
 	const [exists, inRoom] = await Promise.all([
@@ -127,11 +171,19 @@ Assert.room = helpers.try(async (req, res, next) => {
 	]);
 
 	if (!exists) {
-		return controllerHelpers.formatApiResponse(404, res, new Error('[[error:chat-room-does-not-exist]]'));
+		return controllerHelpers.formatApiResponse(
+			404,
+			res,
+			new Error('[[error:chat-room-does-not-exist]]')
+		);
 	}
 
 	if (!inRoom) {
-		return controllerHelpers.formatApiResponse(403, res, new Error('[[error:no-privileges]]'));
+		return controllerHelpers.formatApiResponse(
+			403,
+			res,
+			new Error('[[error:no-privileges]]')
+		);
 	}
 
 	next();
@@ -141,9 +193,17 @@ Assert.message = helpers.try(async (req, res, next) => {
 	if (
 		!isFinite(req.params.mid) ||
 		!(await messaging.messageExists(req.params.mid)) ||
-		!(await messaging.canViewMessage(req.params.mid, req.params.roomId, req.uid))
+		!(await messaging.canViewMessage(
+			req.params.mid,
+			req.params.roomId,
+			req.uid
+		))
 	) {
-		return controllerHelpers.formatApiResponse(400, res, new Error('[[error:invalid-mid]]'));
+		return controllerHelpers.formatApiResponse(
+			400,
+			res,
+			new Error('[[error:invalid-mid]]')
+		);
 	}
 
 	next();

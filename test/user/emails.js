@@ -103,7 +103,10 @@ describe('email confirmation (library methods)', () => {
 			await user.email.expireValidation(uid);
 
 			assert.strictEqual(await user.email.isValidationPending(uid), false);
-			assert.strictEqual(await user.email.isValidationPending(uid, email), false);
+			assert.strictEqual(
+				await user.email.isValidationPending(uid, email),
+				false
+			);
 			assert.strictEqual(await user.email.canSendValidation(uid, email), true);
 		});
 	});
@@ -160,32 +163,52 @@ describe('email confirmation (v3 api)', () => {
 
 	it('should have a pending validation', async () => {
 		const code = await db.get(`confirm:byUid:${userObj.uid}`);
-		assert.strictEqual(await user.email.isValidationPending(userObj.uid, 'test@example.org'), true);
+		assert.strictEqual(
+			await user.email.isValidationPending(userObj.uid, 'test@example.org'),
+			true
+		);
 	});
 
 	it('should not list their email', async () => {
-		const { response, body } = await helpers.request('get', `/api/v3/users/${userObj.uid}/emails`, {
-			jar,
-			json: true,
-		});
+		const { response, body } = await helpers.request(
+			'get',
+			`/api/v3/users/${userObj.uid}/emails`,
+			{
+				jar,
+				json: true,
+			}
+		);
 
 		assert.strictEqual(response.statusCode, 200);
-		assert.deepStrictEqual(body, JSON.parse('{"status":{"code":"ok","message":"OK"},"response":{"emails":[]}}'));
+		assert.deepStrictEqual(
+			body,
+			JSON.parse(
+				'{"status":{"code":"ok","message":"OK"},"response":{"emails":[]}}'
+			)
+		);
 	});
 
 	it('should not allow confirmation if they are not an admin', async () => {
-		const { response } = await helpers.request('post', `/api/v3/users/${userObj.uid}/emails/${encodeURIComponent('test@example.org')}/confirm`, {
-			jar,
-		});
+		const { response } = await helpers.request(
+			'post',
+			`/api/v3/users/${userObj.uid}/emails/${encodeURIComponent('test@example.org')}/confirm`,
+			{
+				jar,
+			}
+		);
 
 		assert.strictEqual(response.statusCode, 403);
 	});
 
 	it('should not confirm an email that is not pending or set', async () => {
 		await groups.join('administrators', userObj.uid);
-		const { response } = await helpers.request('post', `/api/v3/users/${userObj.uid}/emails/${encodeURIComponent('fake@example.org')}/confirm`, {
-			jar,
-		});
+		const { response } = await helpers.request(
+			'post',
+			`/api/v3/users/${userObj.uid}/emails/${encodeURIComponent('fake@example.org')}/confirm`,
+			{
+				jar,
+			}
+		);
 
 		assert.strictEqual(response.statusCode, 404);
 		await groups.leave('administrators', userObj.uid);
@@ -193,12 +216,19 @@ describe('email confirmation (v3 api)', () => {
 
 	it('should confirm their email (using the pending validation)', async () => {
 		await groups.join('administrators', userObj.uid);
-		const { response, body } = await helpers.request('post', `/api/v3/users/${userObj.uid}/emails/${encodeURIComponent('test@example.org')}/confirm`, {
-			jar,
-		});
+		const { response, body } = await helpers.request(
+			'post',
+			`/api/v3/users/${userObj.uid}/emails/${encodeURIComponent('test@example.org')}/confirm`,
+			{
+				jar,
+			}
+		);
 
 		assert.strictEqual(response.statusCode, 200);
-		assert.deepStrictEqual(body, JSON.parse('{"status":{"code":"ok","message":"OK"},"response":{}}'));
+		assert.deepStrictEqual(
+			body,
+			JSON.parse('{"status":{"code":"ok","message":"OK"},"response":{}}')
+		);
 		await groups.leave('administrators', userObj.uid);
 	});
 
@@ -208,13 +238,20 @@ describe('email confirmation (v3 api)', () => {
 		({ jar } = await helpers.loginUser('email-test', 'abcdef')); // email removal logs out everybody
 		await groups.join('administrators', userObj.uid);
 
-		const { response, body } = await helpers.request('post', `/api/v3/users/${userObj.uid}/emails/${encodeURIComponent('test@example.org')}/confirm`, {
-			jar,
-			json: true,
-		});
+		const { response, body } = await helpers.request(
+			'post',
+			`/api/v3/users/${userObj.uid}/emails/${encodeURIComponent('test@example.org')}/confirm`,
+			{
+				jar,
+				json: true,
+			}
+		);
 
 		assert.strictEqual(response.statusCode, 200);
-		assert.deepStrictEqual(body, JSON.parse('{"status":{"code":"ok","message":"OK"},"response":{}}'));
+		assert.deepStrictEqual(
+			body,
+			JSON.parse('{"status":{"code":"ok","message":"OK"},"response":{}}')
+		);
 		await groups.leave('administrators', userObj.uid);
 	});
 });

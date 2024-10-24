@@ -47,7 +47,10 @@ module.exports = function (middleware) {
 			return true;
 		}
 
-		if (res.locals.isAPI && (req.loggedIn || !req.headers.hasOwnProperty('authorization'))) {
+		if (
+			res.locals.isAPI &&
+			(req.loggedIn || !req.headers.hasOwnProperty('authorization'))
+		) {
 			// If authenticated via cookie (express-session), protect routes with CSRF checking
 			await middleware.applyCSRFasync(req, res);
 		}
@@ -56,13 +59,18 @@ module.exports = function (middleware) {
 			return true;
 		} else if (req.headers.hasOwnProperty('authorization')) {
 			const user = await passportAuthenticateAsync(req, res);
-			if (!user) { return true; }
+			if (!user) {
+				return true;
+			}
 
 			if (user.hasOwnProperty('uid')) {
 				return await finishLogin(req, user);
 			} else if (user.hasOwnProperty('master') && user.master === true) {
 				// If the token received was a master token, a _uid must also be present for all calls
-				if (req.body.hasOwnProperty('_uid') || req.query.hasOwnProperty('_uid')) {
+				if (
+					req.body.hasOwnProperty('_uid') ||
+					req.query.hasOwnProperty('_uid')
+				) {
 					user.uid = req.body._uid || req.query._uid;
 					delete user.master;
 					return await finishLogin(req, user);
@@ -70,7 +78,9 @@ module.exports = function (middleware) {
 
 				throw new Error('[[error:api.master-token-no-uid]]');
 			} else {
-				winston.warn('[api/authenticate] Unable to find user after verifying token');
+				winston.warn(
+					'[api/authenticate] Unable to find user after verifying token'
+				);
 				return true;
 			}
 		}
@@ -88,29 +98,36 @@ module.exports = function (middleware) {
 	}
 
 	middleware.authenticateRequest = helpers.try(async (req, res, next) => {
-		const { skip } = await plugins.hooks.fire('filter:middleware.authenticate', {
-			skip: {
-				// get: [],
-				post: ['/api/v3/utilities/login'],
-				// etc...
-			},
-		});
+		const { skip } = await plugins.hooks.fire(
+			'filter:middleware.authenticate',
+			{
+				skip: {
+					// get: [],
+					post: ['/api/v3/utilities/login'],
+					// etc...
+				},
+			}
+		);
 
-		const mountedPath = path.join(req.baseUrl, req.path).replace(nconf.get('relative_path'), '');
+		const mountedPath = path
+			.join(req.baseUrl, req.path)
+			.replace(nconf.get('relative_path'), '');
 		const method = req.method.toLowerCase();
 		if (skip[method] && skip[method].includes(mountedPath)) {
 			return next();
 		}
 
-		if (!await authenticate(req, res)) {
+		if (!(await authenticate(req, res))) {
 			return;
 		}
 		next();
 	});
 
-	middleware.ensureSelfOrGlobalPrivilege = helpers.try(async (req, res, next) => {
-		await ensureSelfOrMethod(user.isAdminOrGlobalMod, req, res, next);
-	});
+	middleware.ensureSelfOrGlobalPrivilege = helpers.try(
+		async (req, res, next) => {
+			await ensureSelfOrMethod(user.isAdminOrGlobalMod, req, res, next);
+		}
+	);
 
 	middleware.ensureSelfOrPrivileged = helpers.try(async (req, res, next) => {
 		await ensureSelfOrMethod(user.isPrivileged, req, res, next);
@@ -155,7 +172,10 @@ module.exports = function (middleware) {
 	});
 
 	middleware.canChat = helpers.try(async (req, res, next) => {
-		const canChat = await privileges.global.can(['chat', 'chat:privileged'], req.uid);
+		const canChat = await privileges.global.can(
+			['chat', 'chat:privileged'],
+			req.uid
+		);
 		if (canChat.includes(true)) {
 			return next();
 		}
@@ -170,11 +190,14 @@ module.exports = function (middleware) {
 			return controllers.helpers.notAllowed(req, res);
 		}
 
-		if (!['uid', 'userslug'].some(param => req.params.hasOwnProperty(param))) {
+		if (
+			!['uid', 'userslug'].some((param) => req.params.hasOwnProperty(param))
+		) {
 			return controllers.helpers.notAllowed(req, res);
 		}
 
-		const uid = req.params.uid || await user.getUidByUserslug(req.params.userslug);
+		const uid =
+			req.params.uid || (await user.getUidByUserslug(req.params.userslug));
 		let allowed = await privileges.users.canEdit(req.uid, uid);
 		if (allowed) {
 			return next();
@@ -190,13 +213,15 @@ module.exports = function (middleware) {
 		controllers.helpers.notAllowed(req, res);
 	});
 
-	middleware.redirectToAccountIfLoggedIn = helpers.try(async (req, res, next) => {
-		if (req.session.forceLogin || req.uid <= 0) {
-			return next();
+	middleware.redirectToAccountIfLoggedIn = helpers.try(
+		async (req, res, next) => {
+			if (req.session.forceLogin || req.uid <= 0) {
+				return next();
+			}
+			const userslug = await user.getUserField(req.uid, 'userslug');
+			controllers.helpers.redirect(res, `/user/${userslug}`);
 		}
-		const userslug = await user.getUserField(req.uid, 'userslug');
-		controllers.helpers.redirect(res, `/user/${userslug}`);
-	});
+	);
 
 	middleware.redirectUidToUserslug = helpers.try(async (req, res, next) => {
 		const uid = parseInt(req.params.uid, 10);
@@ -211,7 +236,8 @@ module.exports = function (middleware) {
 		if (!userslug || (!canView && req.uid !== uid)) {
 			return next();
 		}
-		const path = req.url.replace(/^\/api/, '')
+		const path = req.url
+			.replace(/^\/api/, '')
 			.replace(`/uid/${uid}`, () => `/user/${userslug}`);
 		controllers.helpers.redirect(res, path, true);
 	});
@@ -254,27 +280,43 @@ module.exports = function (middleware) {
 			if (res.locals.isAPI) {
 				req.params.userslug = lowercaseSlug;
 			} else {
-				const newPath = req.path.replace(new RegExp(`/${req.params.userslug}`), () => `/${lowercaseSlug}`);
+				const newPath = req.path.replace(
+					new RegExp(`/${req.params.userslug}`),
+					() => `/${lowercaseSlug}`
+				);
 				return res.redirect(`${nconf.get('relative_path')}${newPath}`);
 			}
 		}
 
-		res.locals.userData = await accountHelpers.getUserDataByUserSlug(req.params.userslug, req.uid, req.query);
+		res.locals.userData = await accountHelpers.getUserDataByUserSlug(
+			req.params.userslug,
+			req.uid,
+			req.query
+		);
 		if (!res.locals.userData) {
 			return next('route');
 		}
 		next();
 	};
 
-	middleware.registrationComplete = async function registrationComplete(req, res, next) {
+	middleware.registrationComplete = async function registrationComplete(
+		req,
+		res,
+		next
+	) {
 		/**
 		 * Redirect the user to complete registration if:
 		 *   * user's session contains registration data
 		 *   * email is required and they have no confirmed email (pending doesn't count, but admins are OK)
 		 */
-		const path = req.path.startsWith('/api/') ? req.path.replace('/api', '') : req.path;
+		const path = req.path.startsWith('/api/')
+			? req.path.replace('/api', '')
+			: req.path;
 
-		if (meta.config.requireEmailAddress && await requiresEmailConfirmation(req)) {
+		if (
+			meta.config.requireEmailAddress &&
+			(await requiresEmailConfirmation(req))
+		) {
 			req.session.registration = {
 				...req.session.registration,
 				uid: req.uid,
@@ -286,10 +328,13 @@ module.exports = function (middleware) {
 			return setImmediate(next);
 		}
 
-		const { allowed } = await plugins.hooks.fire('filter:middleware.registrationComplete', {
-			allowed: ['/register/complete', '/confirm/'],
-		});
-		if (allowed.includes(path) || allowed.some(p => path.startsWith(p))) {
+		const { allowed } = await plugins.hooks.fire(
+			'filter:middleware.registrationComplete',
+			{
+				allowed: ['/register/complete', '/confirm/'],
+			}
+		);
+		if (allowed.includes(path) || allowed.some((p) => path.startsWith(p))) {
 			return setImmediate(next);
 		}
 

@@ -42,17 +42,15 @@ require('./blocks')(User);
 require('./uploads')(User);
 
 User.exists = async function (uids) {
-	return await (
-		Array.isArray(uids) ?
-			db.isSortedSetMembers('users:joindate', uids) :
-			db.isSortedSetMember('users:joindate', uids)
-	);
+	return await (Array.isArray(uids)
+		? db.isSortedSetMembers('users:joindate', uids)
+		: db.isSortedSetMember('users:joindate', uids));
 };
 
 User.existsBySlug = async function (userslug) {
 	if (Array.isArray(userslug)) {
 		const uids = await User.getUidsByUserslugs(userslug);
-		return uids.map(uid => !!uid);
+		return uids.map((uid) => !!uid);
 	}
 	const uid = await User.getUidByUserslug(userslug);
 	return !!uid;
@@ -62,7 +60,13 @@ User.getUidsFromSet = async function (set, start, stop) {
 	if (set === 'users:online') {
 		const count = parseInt(stop, 10) === -1 ? stop : stop - start + 1;
 		const now = Date.now();
-		return await db.getSortedSetRevRangeByScore(set, start, count, '+inf', now - (meta.config.onlineCutoff * 60000));
+		return await db.getSortedSetRevRangeByScore(
+			set,
+			start,
+			count,
+			'+inf',
+			now - meta.config.onlineCutoff * 60000
+		);
 	}
 	return await db.getSortedSetRevRange(set, start, stop);
 };
@@ -73,19 +77,38 @@ User.getUsersFromSet = async function (set, uid, start, stop) {
 };
 
 User.getUsersWithFields = async function (uids, fields, uid) {
-	let results = await plugins.hooks.fire('filter:users.addFields', { fields: fields });
+	let results = await plugins.hooks.fire('filter:users.addFields', {
+		fields: fields,
+	});
 	results.fields = _.uniq(results.fields);
 	const userData = await User.getUsersFields(uids, results.fields);
-	results = await plugins.hooks.fire('filter:userlist.get', { users: userData, uid: uid });
+	results = await plugins.hooks.fire('filter:userlist.get', {
+		users: userData,
+		uid: uid,
+	});
 	return results.users;
 };
 
 User.getUsers = async function (uids, uid) {
-	const userData = await User.getUsersWithFields(uids, [
-		'uid', 'username', 'userslug', 'picture', 'status',
-		'postcount', 'reputation', 'email:confirmed', 'lastonline',
-		'flags', 'banned', 'banned:expire', 'joindate',
-	], uid);
+	const userData = await User.getUsersWithFields(
+		uids,
+		[
+			'uid',
+			'username',
+			'userslug',
+			'picture',
+			'status',
+			'postcount',
+			'reputation',
+			'email:confirmed',
+			'lastonline',
+			'flags',
+			'banned',
+			'banned:expire',
+			'joindate',
+		],
+		uid
+	);
 
 	return User.hidePrivateData(userData, uid);
 };
@@ -94,8 +117,9 @@ User.getStatus = function (userData) {
 	if (userData.uid <= 0) {
 		return 'offline';
 	}
-	const isOnline = (Date.now() - userData.lastonline) < (meta.config.onlineCutoff * 60000);
-	return isOnline ? (userData.status || 'online') : 'offline';
+	const isOnline =
+		Date.now() - userData.lastonline < meta.config.onlineCutoff * 60000;
+	return isOnline ? userData.status || 'online' : 'offline';
 };
 
 User.getUidByUsername = async function (username) {
@@ -122,7 +146,7 @@ User.getUidsByUserslugs = async function (userslugs) {
 
 User.getUsernamesByUids = async function (uids) {
 	const users = await User.getUsersFields(uids, ['username']);
-	return users.map(user => user.username);
+	return users.map((user) => user.username);
 };
 
 User.getUsernameByUserslug = async function (slug) {
@@ -135,7 +159,7 @@ User.getUidByEmail = async function (email) {
 };
 
 User.getUidsByEmails = async function (emails) {
-	emails = emails.map(email => email && email.toLowerCase());
+	emails = emails.map((email) => email && email.toLowerCase());
 	return await db.sortedSetScores('email:uid', emails);
 };
 
@@ -174,7 +198,11 @@ User.isPrivileged = async function (uid) {
 		return false;
 	}
 	const results = await User.getPrivileges(uid);
-	return results ? (results.isAdmin || results.isGlobalModerator || results.isModeratorOfAnyCategory) : false;
+	return results
+		? results.isAdmin ||
+				results.isGlobalModerator ||
+				results.isModeratorOfAnyCategory
+		: false;
 };
 
 User.isAdminOrGlobalMod = async function (uid) {
@@ -208,7 +236,10 @@ async function isSelfOrMethod(callerUid, uid, method) {
 }
 
 User.getAdminsandGlobalMods = async function () {
-	const results = await groups.getMembersOfGroups(['administrators', 'Global Moderators']);
+	const results = await groups.getMembersOfGroups([
+		'administrators',
+		'Global Moderators',
+	]);
 	return await User.getUsersData(_.union(...results));
 };
 
