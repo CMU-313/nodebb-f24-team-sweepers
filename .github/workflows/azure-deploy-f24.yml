@@ -43,7 +43,15 @@ jobs:
             "redis:host": "${{ secrets.REDIS_HOST }}",
             "redis:port": "6379",
             "redis:password": "${{ secrets.REDIS_PASSWORD }}" }'
-          
+
+      - name: Install frontend repo
+        run: |
+          npm i https://github.com/sschauk/nodebb-theme-quickstart.git
+
+      - name: Build 
+        run: |
+          ./nodebb build
+
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
