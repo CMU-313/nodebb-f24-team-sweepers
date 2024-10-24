@@ -44,6 +44,10 @@ jobs:
             "redis:port": "6379",
             "redis:password": "${{ secrets.REDIS_PASSWORD }}" }'
 
+      - name: Install dependencies
+        run: |
+          npm install
+
       - name: Install frontend repo
         run: |
           npm i https://github.com/CMU-313/nodebb-frontend-f24-team-sweepers.git
