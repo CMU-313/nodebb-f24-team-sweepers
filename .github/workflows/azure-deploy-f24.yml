@@ -51,6 +51,7 @@ jobs:
   
       - name: Install theme dependencies
         run: |
+          git clone https://github.com/sschauk/nodebb-theme-quickstart.git
           cd nodebb-theme-quickstart  # Navigate to submodule directory
           npm install  # Install frontend repo dependencies
 
