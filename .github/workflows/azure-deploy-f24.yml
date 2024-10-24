@@ -26,6 +26,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true  # Initialize submodules
+          fetch-depth: 0  # Fetch the full repository to avoid shallow clone issues
 
       - name: Set up Node.js version
         uses: actions/setup-node@v3
@@ -44,9 +47,17 @@ jobs:
             "redis:port": "6379",
             "redis:password": "${{ secrets.REDIS_PASSWORD }}" }'
 
-      - name: Install frontend repo
+      - name: Install NodeBB dependencies
+        run: npm install
+
+      - name: Install frontend submodule
         run: |
-          npm i https://github.com/sschauk/nodebb-theme-quickstart.git
+          cd nodebb-theme-quickstart  # Navigate to submodule directory
+          npm install  # Install frontend repo dependencies
+
+      # - name: Install frontend repo
+      #   run: |
+      #     npm i https://github.com/sschauk/nodebb-theme-quickstart.git
 
       - name: Build 
         run: |
