@@ -1,0 +1,4 @@
+
+> nodebb@3.8.4 static-test
+> standard
+
