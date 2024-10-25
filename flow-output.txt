@@ -1,0 +1,506 @@
+Error ----------------------------------------------------------------------------------------- src/admin/search.js:5:30
+
+Cannot resolve module `sanitize-html`. [cannot-resolve-module]
+
+   5| const sanitizeHTML = require('sanitize-html');
+                                   ^^^^^^^^^^^^^^^
+
+
+Error ----------------------------------------------------------------------------------------- src/admin/search.js:6:23
+
+Cannot resolve module `nconf`. [cannot-resolve-module]
+
+   6| const nconf = require('nconf');
+                            ^^^^^^^
+
+
+Error ----------------------------------------------------------------------------------------- src/admin/search.js:7:25
+
+Cannot resolve module `winston`. [cannot-resolve-module]
+
+   7| const winston = require('winston');
+                              ^^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:12:28
+
+Cannot build a typed interface for this module. You should annotate the exports of this module with types. Missing type
+annotation at identifier: [signature-verification-failure]
+
+   12| function filterDirectories(directories) {
+                                  ^^^^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:12:28
+
+Missing an annotation on `directories`. [missing-local-annot]
+
+   12| function filterDirectories(directories) {
+                                  ^^^^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:12:40
+
+Cannot build a typed interface for this module. You should annotate the exports of this module with types. Missing type
+annotation at function return: [signature-verification-failure]
+
+   12| function filterDirectories(directories) {
+                                              
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:32:33
+
+Cannot call `file.walk` because property `walk` is missing in exports [1]. [prop-missing]
+
+   src/admin/search.js:32:33
+   32| 	const directories = await file.walk(path.resolve(nconf.get('views_dir'), 'admin'));
+                                       ^^^^
+
+References:
+   src/file.js
+   ^^^^^^^^^^^ [1]
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:36:19
+
+Cannot build a typed interface for this module. You should annotate the exports of this module with types. Missing type
+annotation at identifier: [signature-verification-failure]
+
+   36| function sanitize(html) {
+                         ^^^^
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:36:19
+
+Missing an annotation on `html`. [missing-local-annot]
+
+   36| function sanitize(html) {
+                         ^^^^
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:36:24
+
+Cannot build a typed interface for this module. You should annotate the exports of this module with types. Missing type
+annotation at function return: [signature-verification-failure]
+
+   36| function sanitize(html) {
+                              
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:45:19
+
+Cannot build a typed interface for this module. You should annotate the exports of this module with types. Missing type
+annotation at identifier: [signature-verification-failure]
+
+   45| function simplify(translations) {
+                         ^^^^^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:45:19
+
+Missing an annotation on `translations`. [missing-local-annot]
+
+   45| function simplify(translations) {
+                         ^^^^^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:45:32
+
+Cannot build a typed interface for this module. You should annotate the exports of this module with types. Missing type
+annotation at function return: [signature-verification-failure]
+
+   45| function simplify(translations) {
+                                      
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:54:20
+
+Missing an annotation on `namespace`. [missing-local-annot]
+
+   54| function nsToTitle(namespace) {
+                          ^^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:61:29
+
+Missing an annotation on `namespace`. [missing-local-annot]
+
+   61| async function initFallback(namespace) {
+                                   ^^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:77:25
+
+Missing an annotation on `namespace`. [missing-local-annot]
+
+   77| async function fallback(namespace) {
+                               ^^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:87:25
+
+Missing an annotation on `language`. [missing-local-annot]
+
+   87| async function initDict(language) {
+                               ^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:92:31
+
+Missing an annotation on `language`. [missing-local-annot]
+
+   92| async function buildNamespace(language, namespace) {
+                                     ^^^^^^^^
+
+
+Error ---------------------------------------------------------------------------------------- src/admin/search.js:92:41
+
+Missing an annotation on `namespace`. [missing-local-annot]
+
+   92| async function buildNamespace(language, namespace) {
+                                               ^^^^^^^^^
+
+
+Error --------------------------------------------------------------------------------------- src/admin/search.js:127:30
+
+Cannot build a typed interface for this module. You should annotate the exports of this module with types. Missing type
+annotation at identifier: [signature-verification-failure]
+
+   127| async function getDictionary(language) {
+                                     ^^^^^^^^
+
+
+Error --------------------------------------------------------------------------------------- src/admin/search.js:127:30
+
+Missing an annotation on `language`. [missing-local-annot]
+
+   127| async function getDictionary(language) {
+                                     ^^^^^^^^
+
+
+Error --------------------------------------------------------------------------------------- src/admin/search.js:127:39
+
+Cannot build a typed interface for this module. You should annotate the exports of this module with types. Missing type
+annotation at function return: [signature-verification-failure]
+
+   127| async function getDictionary(language) {
+                                              
+
+
+Error --------------------------------------------------------------------------------------- src/admin/search.js:142:25
+
+`module` may only be used as part of a legal top level export statement [invalid-export]
+
+   142| require('../promisify')(module.exports);
+                                ^^^^^^
+
+
+Error --------------------------------------------------------------------------------------- src/admin/versions.js:9:22
+
+Cannot build a typed interface for this module. You should annotate the exports of this module with types. Cannot
+determine the type of this literal. Please provide an annotation, e.g., by adding a type cast around this expression.
+[signature-verification-failure]
+
+   9| const isPrerelease = /^v?\d+\.\d+\.\d+-.+$/;
+                           ^^^^^^^^^^^^^^^^^^^^^^
+
+
+Error -------------------------------------------------------------------------------------- src/admin/versions.js:12:34
+
+Cannot build a typed interface for this module. You should annotate the exports of this module with types. Missing type
+annotation at function return: [signature-verification-failure]
+
+   12| async function getLatestVersion() {
+                                        
+
+
+Error -------------------------------------------------------------------------------------- src/admin/versions.js:15:71
+
+Cannot get `meta.config` because property `config` is missing in exports [1]. [prop-missing]
+
+   src/admin/versions.js:15:71
+   15| 		'User-Agent': encodeURIComponent(`NodeBB Admin Control Panel/${meta.config.title}`),
+                                                                             ^^^^^^
+
+References:
+   src/meta/index.js
+   ^^^^^^^^^^^^^^^^^ [1]
+
+
+Error -------------------------------------------------------------------------------------- src/admin/versions.js:15:78
+
+Cannot get `meta.config.title` because property `title` is missing in `void` (due to access of non-existent property
+`config`) [1]. [incompatible-use]
+
+   src/admin/versions.js:15:78
+   15| 		'User-Agent': encodeURIComponent(`NodeBB Admin Control Panel/${meta.config.title}`),
+                                                                                    ^^^^^
+
+References:
+   src/admin/versions.js:15:66
+   15| 		'User-Agent': encodeURIComponent(`NodeBB Admin Control Panel/${meta.config.title}`),
+                                                                        ^^^^^^^^^^^ [1]
+
+
+Error -------------------------------------------------------------------------------------- src/admin/versions.js:19:11
+
+Cannot assign `versionCacheLastModified` to `headers['If-Modifie...']` because property `If-Modified-Since` is missing
+in object literal [1]. [prop-missing]
+
+   src/admin/versions.js:19:11
+   19| 		headers['If-Modified-Since'] = versionCacheLastModified;
+                 ^^^^^^^^^^^^^^^^^^^
+
+References:
+   src/admin/versions.js:13:18
+                        v
+   13| 	const headers = {
+   14| 		Accept: 'application/vnd.github.v3+json',
+   15| 		'User-Agent': encodeURIComponent(`NodeBB Admin Control Panel/${meta.config.title}`),
+   16| 	};
+       	^ [1]
+
+
+Error -------------------------------------------------------------------------------------- src/admin/versions.js:44:25
+
+`exports` may only be used as part of a legal top level export statement [invalid-export]
+
+   44| require('../promisify')(exports);
+                               ^^^^^^^
+
+
+Error -------------------------------------------------------------------------------------------------- src/als.js:3:39
+
+Cannot resolve module `async_hooks`. [cannot-resolve-module]
+
+   3| const { AsyncLocalStorage } = require('async_hooks');
+                                            ^^^^^^^^^^^^^
+
+
+Error -------------------------------------------------------------------------------------------------- src/als.js:5:27
+
+Cannot build a typed interface for this module. You should annotate the exports of this module with types. Cannot
+determine the type of this new expression. Please provide an annotation, e.g., by adding a type cast around this
+expression. [signature-verification-failure]
+
+   5| const asyncLocalStorage = new AsyncLocalStorage();
+                                ^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Error -------------------------------------------------------------------------------------------- src/analytics.js:3:25
+
+Cannot resolve module `cron`. [cannot-resolve-module]
+
+   3| const cronJob = require('cron').CronJob;
+                              ^^^^^^
+
+
+Error -------------------------------------------------------------------------------------------- src/analytics.js:4:25
+
+Cannot resolve module `winston`. [cannot-resolve-module]
+
+   4| const winston = require('winston');
+                              ^^^^^^^^^
+
+
+Error -------------------------------------------------------------------------------------------- src/analytics.js:5:23
+
+Cannot resolve module `nconf`. [cannot-resolve-module]
+
+   5| const nconf = require('nconf');
+                            ^^^^^^^
+
+
+Error -------------------------------------------------------------------------------------------- src/analytics.js:8:19
+
+Cannot resolve module `lodash`. [cannot-resolve-module]
+
+   8| const _ = require('lodash');
+                        ^^^^^^^^
+
+
+Error ------------------------------------------------------------------------------------------- src/analytics.js:19:19
+
+`module` may only be used as part of a legal top level export statement [invalid-export]
+
+   19| const Analytics = module.exports;
+                         ^^^^^^
+
+
+Error ------------------------------------------------------------------------------------------- src/analytics.js:41:22
+
+Cannot get `meta.config` because property `config` is missing in exports [1]. [prop-missing]
+
+   src/analytics.js:41:22
+   41| 		max: parseInt(meta.config['analytics:maxCache'], 10) || 500,
+                            ^^^^^^
+
+References:
+   src/meta/index.js
+   ^^^^^^^^^^^^^^^^^ [1]
+
+
+Error ------------------------------------------------------------------------------------------- src/analytics.js:41:29
+
+Cannot get `meta.config['analytics:...']` because an index signature declaring the expected key / value type is missing
+in `void` (due to access of non-existent property `config`) [1]. [incompatible-use]
+
+   src/analytics.js:41:29
+   41| 		max: parseInt(meta.config['analytics:maxCache'], 10) || 500,
+                                   ^^^^^^^^^^^^^^^^^^^^
+
+References:
+   src/analytics.js:41:17
+   41| 		max: parseInt(meta.config['analytics:maxCache'], 10) || 500,
+                       ^^^^^^^^^^^ [1]
+
+
+Error ------------------------------------------------------------------------------------------- src/analytics.js:67:30
+
+Missing an annotation on `obj1`. [missing-local-annot]
+
+   67| function incrementProperties(obj1, obj2) {
+                                    ^^^^
+
+
+Error ------------------------------------------------------------------------------------------- src/analytics.js:67:36
+
+Missing an annotation on `obj2`. [missing-local-annot]
+
+   67| function incrementProperties(obj1, obj2) {
+                                          ^^^^
+
+
+Error ------------------------------------------------------------------------------------------- src/analytics.js:81:10
+
+Cannot get `plugins.hooks` because property `hooks` is missing in exports [1]. [prop-missing]
+
+   src/analytics.js:81:10
+   81| 	plugins.hooks.fire('action:analytics.increment', { keys: keys });
+                ^^^^^
+
+References:
+   src/plugins/index.js
+   ^^^^^^^^^^^^^^^^^^^^ [1]
+
+
+Error ------------------------------------------------------------------------------------------- src/analytics.js:81:16
+
+Cannot call `plugins.hooks.fire` because property `fire` is missing in `void` (due to access of non-existent property
+`hooks`) [1]. [incompatible-use]
+
+   src/analytics.js:81:16
+   81| 	plugins.hooks.fire('action:analytics.increment', { keys: keys });
+                      ^^^^
+
+References:
+   src/analytics.js:81:2
+   81| 	plugins.hooks.fire('action:analytics.increment', { keys: keys });
+        ^^^^^^^^^^^^^ [1]
+
+
+Error ------------------------------------------------------------------------------------------- src/analytics.js:221:9
+
+Cannot use number [1] to assign a computed property. Computed properties may only be numeric or string literal values.
+See https://flow.org/en/docs/types/literals/ for more information on literal types. [invalid-computed-prop]
+
+   src/analytics.js:221:9
+   221| 		terms[term] = parseInt(counts[index], 10) || 0;
+                ^^^^
+
+References:
+   src/analytics.js:215:17
+   215| 		hoursArr.push(hour.getTime() - (i * 3600 * 1000));
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+
+
+Error ------------------------------------------------------------------------------------------ src/analytics.js:228:23
+
+Cannot access object with computed property using number [1]. Only number literals are allowed, not `number` in general.
+[invalid-computed-prop]
+
+   src/analytics.js:228:23
+   228| 		termsArr.push(terms[hour]);
+                              ^^^^
+
+References:
+   src/analytics.js:215:17
+   215| 		hoursArr.push(hour.getTime() - (i * 3600 * 1000));
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [1]
+
+
+Error ------------------------------------------------------------------------------------------ src/analytics.js:245:32
+
+Missing an annotation on `hour`. [missing-local-annot]
+
+   245| 	async function getHourlyStats(hour) {
+                                       ^^^^
+
+
+Error -------------------------------------------------------------------------------------------- src/api/admin.js:8:18
+
+`module` may only be used as part of a legal top level export statement [invalid-export]
+
+   8| const adminApi = module.exports;
+                       ^^^^^^
+
+
+Error ------------------------------------------------------------------------------------------- src/api/admin.js:11:30
+
+Cannot get `privileges.admin` because property `admin` is missing in exports [1]. [prop-missing]
+
+   src/api/admin.js:11:30
+   11| 	const ok = await privileges.admin.can('admin:settings', caller.uid);
+                                    ^^^^^
+
+References:
+   src/privileges/index.js
+   ^^^^^^^^^^^^^^^^^^^^^^^ [1]
+
+
+Error ------------------------------------------------------------------------------------------- src/api/admin.js:11:36
+
+Cannot call `privileges.admin.can` because property `can` is missing in `void` (due to access of non-existent property
+`admin`) [1]. [incompatible-use]
+
+   src/api/admin.js:11:36
+   11| 	const ok = await privileges.admin.can('admin:settings', caller.uid);
+                                          ^^^
+
+References:
+   src/api/admin.js:11:19
+   11| 	const ok = await privileges.admin.can('admin:settings', caller.uid);
+                         ^^^^^^^^^^^^^^^^ [1]
+
+
+Error ------------------------------------------------------------------------------------------- src/api/admin.js:16:13
+
+Cannot get `meta.configs` because property `configs` is missing in exports [1]. [prop-missing]
+
+   src/api/admin.js:16:13
+   16| 	await meta.configs.set(setting, value);
+                   ^^^^^^^
+
+References:
+   src/meta/index.js
+   ^^^^^^^^^^^^^^^^^ [1]
+
+
+Error ------------------------------------------------------------------------------------------- src/api/admin.js:16:21
+
+Cannot call `meta.configs.set` because property `set` is missing in `void` (due to access of non-existent property
+`configs`) [1]. [incompatible-use]
+
+   src/api/admin.js:16:21
+   16| 	await meta.configs.set(setting, value);
+                           ^^^
+
+References:
+   src/api/admin.js:16:8
+   16| 	await meta.configs.set(setting, value);
+              ^^^^^^^^^^^^ [1]
+
+
+
+... 19421 more errors (only 50 out of 19471 errors displayed)
+To see all errors, re-run Flow with --show-all-errors
